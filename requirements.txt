@@ -1,0 +1,7 @@
+openai
+ollama
+numpy
+pandas
+click
+googletrans
+pyttsx3
