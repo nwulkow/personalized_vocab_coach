@@ -1,24 +1,26 @@
+import os
 import pandas as pd
 import numpy as np
 from file_utils import get_word_list
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
+from llama_cpp import Llama
+from ollama_utils import Llama_params
 from ollama_start import start_ollama
 
 def run_test(
         language_1: str,
         language_2: str,
         no_words: int | None = None,
-        url: str | None = None,
-        model_id: str | None = None,
+        llama_params: Llama_params | None = None,
         hide_used_word_for_n_words: int = 10,
         probability_for_sentence_creation: float = 0.1,
         use_voice: bool = False,
         hide_correctly_translated_words: bool = False
 ):  
-        if url is not None:
+        if llama_params is not None and len(llama_params.url) > 0:
             # check if a server under url is running
-            start_ollama(url)
+            start_ollama(llama_params.url)
         # load correct word list from folder word_lists
         selected_word_list = get_word_list(language_1, language_2)
         words = pd.read_csv(selected_word_list).squeeze()
@@ -38,8 +40,7 @@ def run_test(
                 language_1,
                 language_2,
                 probability_for_sentence_creation,
-                url,
-                model_id,
+                llama_params
             )
             last_used_words_indices.append(word_index)
             last_used_words_indices = last_used_words_indices[-hide_used_word_for_n_words:]
@@ -49,12 +50,12 @@ def run_test(
                 break
 
             print(f"\n{language_1}: {word_language_1}")
-            if use_voice and language_1 != "german":
+            if use_voice and language_1 != os.getenv("PRIMARY_LANGUAGE", "german"):
                 create_voice_from_text(word_language_1, language=language_1)
 
             user_input = input(f"Enter the {language_2} translation: ").strip()
             
-            if check_equality(user_input, word_language_2, model_id):
+            if check_equality(user_input, word_language_2, llama_params=llama_params):
                 print("✓ Correct!")
                 if hide_correctly_translated_words:
                     words = words.loc[words.index.difference([word_index])]
@@ -63,7 +64,7 @@ def run_test(
 
             words_to_sample_from = words.loc[words.index.difference(last_used_words_indices)]
 
-            if use_voice and language_2 != "german":
+            if use_voice and language_2 != os.getenv("PRIMARY_LANGUAGE", "german"):
                 create_voice_from_text(word_language_2, language=language_2)
 
 
@@ -72,8 +73,7 @@ def sample_word(
     language_1: str,
     language_2: str,
     probability_for_sentence_creation: float,
-    url: str | None,
-    model_id: str | None,
+    llama_params: Llama_params | None = None,
 ) -> tuple[str, str, int]:
     """Sample a word from the given word list.
     
@@ -82,8 +82,7 @@ def sample_word(
     - language_1: The first language (e.g., "german").
     - language_2: The second language (e.g., "english").
     - probability_for_sentence_creation: Probability of creating a sentence using the word.
-    - url: The URL of the Ollama server.
-    - model_id: The model ID to use for Ollama.
+    - llama_params: Parameters for Llama model usage.
 
     Returns:
     - A tuple containing the word in language 1, the word in language 2, and the index of the word in the original list.
@@ -94,11 +93,11 @@ def sample_word(
     word = words.sample(n=1)
     word_index = word.index[0]
     
-    word_language_1 = word[language_1.capitalize()]
-    word_language_2 = word[language_2.capitalize()]
-    num_words_in_word_language_1 = len(str(word_language_1.values[0]).split())
+    word_language_1 = word[language_1.capitalize()].values[0]
+    word_language_2 = word[language_2.capitalize()].values[0]
+    num_words_in_word_language_1 = len(str(word_language_1).split())
     a = np.random.rand()
-    if num_words_in_word_language_1 < 3 and a < probability_for_sentence_creation and url is not None and model_id is not None:
-            word_language_1, word_language_2 = create_sentence_from_word(word_language_1, language_1, language_2, model_id)
+    if num_words_in_word_language_1 < 3 and a < probability_for_sentence_creation and llama_params is not None:
+            word_language_1, word_language_2 = create_sentence_from_word(word_language_1, language_1, language_2, llama_params=llama_params)
 
-    return word_language_1.values[0], word_language_2.values[0], word_index
+    return word_language_1, word_language_2, word_index

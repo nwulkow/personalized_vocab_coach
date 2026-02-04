@@ -19,6 +19,9 @@ google_trans_language_to_file_language_dict = {
 async def translate_text(text: str, src_language: str, dest_language: str, add_to_word_list: bool = False, speak_translated: bool = False) -> str:
     async with Translator() as translator:
         result = await translator.translate(text, src=src_language, dest=dest_language)
+        # return error message if translation failed
+        if result.text is None:
+            return "Translation failed."
         if speak_translated:
             from create_text_and_voice import create_voice_from_text
             create_voice_from_text(result.text, language=dest_language)

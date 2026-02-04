@@ -1,28 +1,34 @@
+import asyncio
 import ollama
 import pyttsx3
+from ollama_utils import respond_to_prompt, Llama_params
+from translator_utils import translate_text
 
 def create_sentence_from_word(
     word: str,
     language_1: str,
     language_2: str,
-    model_id: str | None = None
+    llama_params: Llama_params,
+    temperature: float = 0.7,
+    max_num_words: int = 10,
+    language_level: str = "C1"
 ) -> tuple[str, str]:
     
     prompt = (
-        f"Create a simple sentence (up to 10 words) in {language_1} using the word '{word.split(',')[0].strip()}' "
-        f"and provide its translation in {language_2}. "
-        f"Respond in the format: <sentence in {language_1}>; <sentence in {language_2}>."
+        f"Create a simple sentence (up to {max_num_words} words) in {language_1} using the word '{word.split(',')[0].strip()}' "
+        f"The sentences should be suitable for a language learner at the {language_level} level. "
+        f"Only (!) return the created sentence and nothing more!"
     )
-    response = ollama.chat(
-            model=model_id,
-            messages=[{"role": "user", "content": prompt}],
-        )
-    parts = response.split(";")
-    if len(parts) < 2:
-        raise ValueError("The generated sentence does not contain both parts.")
-    sentence_language_1 = parts[0].strip()
-    sentence_language_2 = parts[1].strip()
-    return sentence_language_1, sentence_language_2
+    response_in_language_1 = respond_to_prompt(
+        prompt,
+        llama_params,
+        temperature=temperature,
+        stop_phrases=["."]
+    )
+    response_in_language_1 = response_in_language_1.strip().split("\n")[0].strip('"').strip("'")
+    response_in_language_2 = asyncio.run(translate_text(response_in_language_1, language_1, language_2, add_to_word_list=False, speak_translated=False))
+
+    return response_in_language_1, response_in_language_2
 
 
 def create_voice_from_text(
