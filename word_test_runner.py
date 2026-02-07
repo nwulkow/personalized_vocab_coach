@@ -5,7 +5,7 @@ from file_utils import get_word_list
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
 from llama_cpp import Llama
-from ollama_utils import Llama_params
+from ollama_utils import Llama_params, respond_to_prompt
 from ollama_start import start_ollama
 
 def run_test(
@@ -16,7 +16,8 @@ def run_test(
         hide_used_word_for_n_words: int = 10,
         probability_for_sentence_creation: float = 0.1,
         use_voice: bool = False,
-        hide_correctly_translated_words: bool = False
+        hide_correctly_translated_words: bool = False,
+        description_for_word_filtering: str | None = None
 ):  
         if llama_params is not None and len(llama_params.url) > 0:
             # check if a server under url is running
@@ -24,6 +25,14 @@ def run_test(
         # load correct word list from folder word_lists
         selected_word_list = get_word_list(language_1, language_2)
         words = pd.read_csv(selected_word_list).squeeze()
+
+        if description_for_word_filtering is not None and llama_params is not None:
+            words_filtered = rename_word_list_by_description(words, language_1, description_for_word_filtering, llama_params)
+            if words_filtered.shape[0] == 0:
+                print("No words found matching the description. Using the full word list.")
+            else:
+                words = words_filtered
+                print(f"{words.shape[0]} words found matching the description. Using the filtered word list.")
 
         # shuffle words randomly
         words = words.sample(frac=1).reset_index(drop=True)
@@ -101,3 +110,56 @@ def sample_word(
             word_language_1, word_language_2 = create_sentence_from_word(word_language_1, language_1, language_2, llama_params=llama_params)
 
     return word_language_1, word_language_2, word_index
+
+
+
+def rename_word_list_by_description(
+    words: pd.Series,
+    language_1: str,
+    description: str,
+    llama_params: Llama_params
+) -> pd.Series:
+    """Choose a word from the given word list based on a description.
+
+    Parameters:
+    - words: The word list as a pandas Series.
+    - language_1: The language of the words in the list (e.g., "german").
+    - description: A description of the word to choose.
+    - llama_params: Parameters for Llama model usage.
+
+    Returns:
+    - A tuple containing the word in language 1, the word in language 2, and the index of the word in the original list.
+    """
+    if words.shape[0] == 0:
+        return None
+    
+    words_list_full = words[language_1.capitalize()].tolist()
+    words_list_full = [str(word) for word in words_list_full]
+    words_list_full_str = ";".join(words_list_full)
+
+    prompt = f"""You are given a list of words in {language_1} and a description of a word.
+    Your task is to filter this list of words and return only those words that match the description. The description is as follows: {description}.
+    Here is the list of words:
+    {words_list_full_str}
+    Return the filtered list of words, each word separated by a semicolon. If no words match the description, return an empty string.
+    """
+
+    prompt = f"""Return only the words that match the description, separated by semicolons. 
+        Do not return any explanations or additional text. Description is as follows: {description}.
+        Here is the list of words:
+        {words_list_full_str}
+    """
+    response_words = respond_to_prompt(
+        prompt,
+        llama_params,
+        temperature=0.1,
+    )
+
+    response_words = response_words.strip().split(";")
+    response_words = [word.strip() for word in response_words if word.strip() in words_list_full]
+
+    words_filtered = words[words[language_1.capitalize()].isin(response_words)]
+
+    return words_filtered
+
+

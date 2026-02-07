@@ -3,7 +3,7 @@ from word_test_runner import run_test
 from llama_cpp import Llama
 
 
-llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/Llama-3.2-8B-Instruct-Q3_K_M.gguf")
+llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf", n_gpu_layers=-1)
 params = Llama_params(use_cpp=True, llama_llm=llm)
 
 run_test(
@@ -14,5 +14,6 @@ run_test(
     hide_used_word_for_n_words=4,
     probability_for_sentence_creation=0.6,
     use_voice=True,
-    hide_correctly_translated_words=True
+    hide_correctly_translated_words=True,
+    description_for_word_filtering="verbs only"
 )
