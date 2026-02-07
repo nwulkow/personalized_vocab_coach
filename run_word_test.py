@@ -15,5 +15,8 @@ run_test(
     probability_for_sentence_creation=0.6,
     use_voice=True,
     hide_correctly_translated_words=True,
-    description_for_word_filtering="verbs only"
+    description_for_word_filtering="No animals",
+    max_num_words_in_created_sentence=8,
+    language_level_for_created_sentence="C2",
+    be_stringent=True
 )

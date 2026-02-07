@@ -2,13 +2,14 @@ import ollama
 from ollama_utils import Llama_params, respond_to_prompt
 
 
-def check_equality(word1:str, word2:str, llama_params: Llama_params | None = None) -> bool:
+def check_equality(word1:str, word2:str, llama_params: Llama_params | None = None, be_stringent: bool = False) -> bool:
     """Check if two words are exactly the same.
 
     Args:
         word1 (str): The first word to compare.
         word2 (str): The second word to compare.
         llama_params (Llama_params, optional): Parameters for the Llama model. If provided, it will be used to check the equality of the words using a language model. Defaults to None.
+        be_stringent (bool, optional): If True, the comparison is more strict. Defaults to False.
 
     Returns:
         bool: True if the words are identical, False otherwise.
@@ -30,10 +31,14 @@ def check_equality(word1:str, word2:str, llama_params: Llama_params | None = Non
             - SAME → meanings are equivalent in everyday usage
             - DIFFERENT → meanings are not equivalent in everyday usage
 
-            It is important that they must mean the same thing, not just be similar. But do not consider minor differences such as plural/singular, verb conjugations, or small spelling mistakes. Focus on the core meaning of the words. Do not be too stringent.
+            It is important that they must mean the same thing, not just be similar. But do not consider minor differences such as plural/singular, verb conjugations, or small spelling mistakes. Focus on the core meaning of the words.
+
 
             Answer with ONLY: SAME or DIFFERENT
             """
+        
+        if be_stringent:
+            prompt += " Be stringent in your classification."
 
         response = respond_to_prompt(
             prompt,
