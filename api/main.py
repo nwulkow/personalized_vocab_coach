@@ -7,6 +7,10 @@ from translator_utils import translate_text
 from word_test_runner import sample_word
     
 app = FastAPI(docs_url="/swagger")
+llama_params_dict = {
+    "use_cpp": True, "model_path": "/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf"
+}
+llama_params = llama_params_from_dict(llama_params_dict)
 
 @app.get("/")
 def root():
@@ -26,17 +30,11 @@ def create_word(
     language_1: str,
     language_2: str,
     probability_for_sentence_creation: float,
-    llama_params_dict: dict | None = None,
     max_num_words_in_created_sentence: int = 10,
     language_level_for_created_sentence: str = "C1"
 ):
     
     words = pd.DataFrame({language_1.capitalize(): words_language_1, language_2.capitalize(): words_language_2})
-
-    if llama_params_dict is not None:
-        llama_params = llama_params_from_dict(llama_params_dict)
-    else:
-        llama_params = None
 
     word = sample_word(
         words,
