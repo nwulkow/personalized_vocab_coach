@@ -5,3 +5,5 @@ pandas
 click
 googletrans
 pyttsx3
+fastapi
+uvicorn
