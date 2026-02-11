@@ -1,5 +1,8 @@
 from ollama_start import start_ollama
+from ollama_utils import Llama_params
+from llama_cpp import Llama
 
+from word_comparisons import check_equality
 
 def test_equality():
     """Test the check_equality function."""
@@ -13,7 +16,6 @@ def test_equality():
 
 def test_meaning_equality():
     """Test the check_equality function with meaning comparison using Ollama model."""
-    from word_comparisons import check_equality
 
     ollama_model_id = "llama3.2:1b"  # Replace with your actual Ollama model ID
 
@@ -23,9 +25,16 @@ def test_meaning_equality():
     assert check_equality("car", "banana", ollama_model_id=ollama_model_id) == False
 
 
+def test_meaning_equality_cpp():
+    llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf", n_gpu_layers=-1)
+    params = Llama_params(use_cpp=True, llama_llm=llm)
+    assert check_equality("car", "automobile", llama_params=params) == True
+    # Test words with different meanings
+    assert check_equality("car", "banana", llama_params=params) == False
+
 
 if __name__ == "__main__":
 
     start_ollama()
     test_equality()
-    test_meaning_equality()
+    test_meaning_equality_cpp()

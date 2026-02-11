@@ -1,0 +1,146 @@
+<template>
+  <div class="translator-tab">
+    <div class="translation-list">
+      <div v-for="(item, index) in translationItems" :key="index" class="translation-item">
+        <div class="translation-row">
+          <div class="input-group">
+            <div class="language-selector">
+              <img :src="`/${item.srcLanguage}.png`" :alt="item.srcLanguage" class="flag-icon" />
+              <select v-model="item.srcLanguage" class="language-select">
+                <option value="german">German</option>
+                <option value="english">English</option>
+                <option value="spanish">Spanish</option>
+                <option value="french">French</option>
+              </select>
+            </div>
+            <textarea v-model="item.sourceText" placeholder="Enter text to translate..." class="text-input" rows="3"></textarea>
+          </div>
+
+          <div class="button-group">
+            <button @click="swapLanguages(index)" class="swap-button" title="Swap languages" type="button">⇄</button>
+            <button @click="translateItem(index)" class="translate-button" :disabled="!item.sourceText.trim()" type="button">→<br/>Translate</button>
+          </div>
+
+          <div class="input-group">
+            <div class="language-selector">
+              <img :src="`/${item.destLanguage}.png`" :alt="item.destLanguage" class="flag-icon" />
+              <select v-model="item.destLanguage" class="language-select">
+                <option value="german">German</option>
+                <option value="english">English</option>
+                <option value="spanish">Spanish</option>
+                <option value="french">French</option>
+              </select>
+            </div>
+            <textarea v-model="item.translatedText" placeholder="Translation will appear here..." class="text-input readonly" rows="3" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="voice-option">
+          <label><input type="checkbox" v-model="item.speakTranslated" /> Enable voice for translation</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button @click="addWordToList" class="action-button primary" type="button">➕ Add to Word List</button>
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+import axios from 'axios'
+
+export default {
+  name: 'TranslatorTab',
+  setup() {
+    const translationItems = ref([
+      { srcLanguage: 'german', destLanguage: 'english', sourceText: '', translatedText: '', speakTranslated: false },
+      { srcLanguage: 'german', destLanguage: 'spanish', sourceText: '', translatedText: '', speakTranslated: false },
+      { srcLanguage: 'german', destLanguage: 'french', sourceText: '', translatedText: '', speakTranslated: false }
+    ])
+
+    const translateItem = async (index) => {
+      const item = translationItems.value[index]
+      if (!item.sourceText.trim()) return
+      try {
+        const response = await axios.post('/api/translate', null, {
+          params: {
+            text: item.sourceText,
+            src_language: item.srcLanguage,
+            dest_language: item.destLanguage,
+            speak_translated: item.speakTranslated
+          }
+        })
+        item.translatedText = response.data.translated_text
+      } catch (err) {
+        console.error('Translation error:', err)
+        alert('Error translating text. Make sure the API server is running.')
+      }
+    }
+
+    const swapLanguages = (index) => {
+      const item = translationItems.value[index]
+      const tmpLang = item.srcLanguage
+      item.srcLanguage = item.destLanguage
+      item.destLanguage = tmpLang
+      const tmpText = item.sourceText
+      item.sourceText = item.translatedText
+      item.translatedText = tmpText
+    }
+
+    const addWordToList = async () => {
+      const validItem = translationItems.value.find(i => i.sourceText.trim() && i.translatedText.trim())
+      if (!validItem) { alert('Please translate at least one text before adding to word list.'); return }
+      try {
+        await axios.post('/api/add_word_pair', null, { params: {
+          word_language_1: validItem.sourceText,
+          word_language_2: validItem.translatedText,
+          language_1: validItem.srcLanguage,
+          language_2: validItem.destLanguage
+        }})
+        alert('Word pair added to list successfully!')
+      } catch (err) {
+        console.error('Error adding word pair:', err)
+        alert('Error adding word pair to list. Make sure the API server is running.')
+      }
+    }
+
+    return { translationItems, translateItem, swapLanguages, addWordToList }
+  }
+}
+</script>
+
+<style scoped>
+.translator-tab { max-width: 1400px; margin: 0 auto; }
+.translation-list { display:flex; flex-direction:column; gap:2rem; margin-bottom:2rem }
+.translation-item { background:white; border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1) }
+.translation-row { display:grid; grid-template-columns: 1fr auto 1fr; gap:1.5rem; align-items:center }
+.button-group { display:flex; flex-direction:column; gap:0.5rem; align-items:center }
+.input-group { display:flex; flex-direction:column; gap:0.5rem }
+.input-group label { font-weight:600; color:#667eea; font-size:0.9rem; text-transform:capitalize }
+.language-selector { display:flex; align-items:center; gap:0.75rem }
+.flag-icon { width:32px; height:24px; object-fit:cover; border-radius:4px; box-shadow:0 2px 4px rgba(0,0,0,0.1) }
+.language-select { padding:0.5rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem; background:white; cursor:pointer }
+.language-select:focus { outline:none; border-color:#667eea }
+.text-input { width:100%; padding:0.75rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem; font-family:inherit; resize:vertical }
+.text-input:focus { outline:none; border-color:#667eea }
+.text-input.readonly { background:#f8f9fa; cursor:default }
+.swap-button { padding:0.5rem 1rem; background:#6c757d; color:white; border:none; border-radius:6px; font-size:1.5rem; font-weight:600; cursor:pointer }
+.swap-button:hover { background:#5a6268; transform:scale(1.03) }
+.translate-button { padding:1rem 1.5rem; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; align-self:center }
+.translate-button:disabled { opacity:0.5; cursor:not-allowed }
+.voice-option { margin-top:1rem; padding-top:1rem; border-top:1px solid #e0e0e0 }
+.voice-option label { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:#667eea }
+.voice-option input[type="checkbox"] { width:16px; height:16px }
+.actions { display:flex; justify-content:flex-end; padding-top:1rem }
+.action-button { padding:1rem 2rem; font-size:1.1rem; font-weight:600; border:none; border-radius:8px; cursor:pointer }
+.action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
+.action-button.primary:hover { transform:translateY(-2px) }
+@media (max-width:768px) {
+  .translation-row { grid-template-columns:1fr; gap:1rem }
+  .button-group { flex-direction:row; width:100%; gap:0.5rem }
+  .swap-button, .translate-button { flex:1 }
+}
+</style>
+            .action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }

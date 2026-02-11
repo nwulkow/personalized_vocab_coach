@@ -46,7 +46,7 @@ def run_test(
     words = pd.read_csv(selected_word_list).squeeze()
 
     if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:
-        words_filtered = rename_word_list_by_description(words, language_1, description_for_word_filtering, llama_params)
+        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params)
         if words_filtered.shape[0] == 0:
             print("No words found matching the description. Using the full word list.")
         else:
@@ -145,13 +145,13 @@ def sample_word(
 
 
 
-def rename_word_list_by_description(
+def filter_word_list_by_description(
     words: pd.Series,
     language_1: str,
     description: str,
     llama_params: Llama_params
 ) -> pd.Series:
-    """Choose a word from the given word list based on a description.
+    """Choose a subset of words from the given word list based on a description.
 
     Parameters:
     - words: The word list as a pandas Series.

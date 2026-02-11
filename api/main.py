@@ -1,12 +1,35 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import asyncio
 import pandas as pd
 from ollama_utils import llama_params_from_dict
 from translator_utils import translate_text
-from word_test_runner import sample_word
+from word_test_runner import sample_word, filter_word_list_by_description
+from file_utils import add_word_pair_to_word_list, get_word_list
+from word_comparisons import check_equality
+
+# Pydantic models for request bodies
+class CreateWordRequest(BaseModel):
+    words_language_1: list[str]
+    words_language_2: list[str]
+    language_1: str
+    language_2: str
+    probability_for_sentence_creation: float
+    max_num_words_in_created_sentence: int = 10
+    language_level_for_created_sentence: str = "C1"
     
 app = FastAPI(docs_url="/swagger")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 llama_params_dict = {
     "use_cpp": True, "model_path": "/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf"
 }
@@ -24,27 +47,98 @@ def translate(text: str, src_language: str, dest_language: str, speak_translated
 
 
 @app.post("/create_word")
-def create_word(
-    words_language_1: list[str],
-    words_language_2: list[str],
-    language_1: str,
-    language_2: str,
-    probability_for_sentence_creation: float,
-    max_num_words_in_created_sentence: int = 10,
-    language_level_for_created_sentence: str = "C1"
-):
+def create_word(request: CreateWordRequest):
     
-    words = pd.DataFrame({language_1.capitalize(): words_language_1, language_2.capitalize(): words_language_2})
+    words = pd.DataFrame({
+        request.language_1.capitalize(): request.words_language_1, 
+        request.language_2.capitalize(): request.words_language_2
+    })
 
-    word = sample_word(
+    word_language_1, word_language_2, word_index = sample_word(
         words,
-        language_1,
-        language_2,
-        probability_for_sentence_creation,
+        request.language_1,
+        request.language_2,
+        request.probability_for_sentence_creation,
         llama_params,
-        max_num_words_in_created_sentence,
-        language_level_for_created_sentence
+        request.max_num_words_in_created_sentence,
+        request.language_level_for_created_sentence
     )
 
-    return {"word": word}
+    return {
+        "word": {
+            "word_language_1": word_language_1,
+            "word_language_2": word_language_2,
+            "word_index": word_index
+        }
+    }
+
+
+@app.post("/add_word_pair")
+def add_word_pair(
+    word_language_1: str,
+    word_language_2: str,
+    language_1: str,
+    language_2: str
+):
+    """Add a word pair to the word list."""
+    add_word_pair_to_word_list(word_language_1, word_language_2, language_1, language_2)
+    return {"status": "success", "message": "Word pair added to list"}
+
+
+@app.get("/word_list")
+def get_word_list_endpoint(language_1: str, language_2: str):
+    """Get the word list for a given language pair."""
+    try:
+        word_list_path = get_word_list(language_1, language_2)
+        words = pd.read_csv(word_list_path).to_dict('records')
+        return {"words": words}
+    except ValueError as e:
+        return {"words": [], "error": str(e)}
+
+
+@app.post("/check_translation")
+def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False):
+    """Check if a user's translation is correct."""
+    is_correct = check_equality(
+        user_translation,
+        correct_translation,
+        llama_params=llama_params,
+        be_stringent=be_stringent
+    )
+    return {"is_correct": is_correct}
+
+
+@app.post("/filter_words")
+def filter_words(language: str, description: str):
+    """Filter words based on a description using LLM."""
+    try:
+        # Get all available word lists for the language
+        import os
+        word_lists_dir = "word_lists"
+        all_words = []
+        
+        # Find all CSV files containing the language
+        for filename in os.listdir(word_lists_dir):
+            if filename.endswith(".csv") and language in filename:
+                filepath = os.path.join(word_lists_dir, filename)
+                words_df = pd.read_csv(filepath)
+                all_words.append(words_df)
+        
+        if not all_words:
+            return {"filtered_words": []}
+        
+        # Combine all word lists
+        combined_words = pd.concat(all_words, ignore_index=True)
+        
+        # Filter using the description
+        filtered_df = filter_word_list_by_description(
+            combined_words,
+            language,
+            description,
+            llama_params
+        )
+        
+        return {"filtered_words": filtered_df.to_dict('records')}
+    except Exception as e:
+        return {"filtered_words": [], "error": str(e)}
 
