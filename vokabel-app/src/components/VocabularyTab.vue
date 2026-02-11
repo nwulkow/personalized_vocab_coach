@@ -150,7 +150,7 @@
       </div>
 
       <div v-else class="no-words">
-        <p>No words available for this language pair.</p>
+        <p>No words left for this language pair!</p>
         <button @click="endTest" class="action-button secondary">Back to Setup</button>
       </div>
     </div>
@@ -198,6 +198,15 @@ export default {
     const usedWordIndices = ref([])
     const correctlyAnsweredIndices = ref([])
     const availableWordsIndices = ref([]) // Maps filtered word indices to original wordsList indices
+
+    // Shuffle two arrays in the same random order (Fisher-Yates)
+    const shufflePairedArrays = (a, b) => {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+        ;[b[i], b[j]] = [b[j], b[i]]
+      }
+    }
 
     const loadWordList = async () => {
       try {
@@ -318,7 +327,8 @@ export default {
           })
         }
         
-        // Store the index mapping for later use
+        // Shuffle available words to avoid repetitive ordering, then store the index mapping for later use
+        shufflePairedArrays(availableWords, indexMapping)
         availableWordsIndices.value = indexMapping
         
         console.log('Total words in list:', wordsList.value.length)
