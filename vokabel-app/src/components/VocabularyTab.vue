@@ -115,18 +115,18 @@
         <div v-if="!answerSubmitted" class="answer-section">
           <label>Your {{ targetLanguage.charAt(0).toUpperCase() + targetLanguage.slice(1) }} translation:</label>
           <input 
+            ref="answerInput"
             v-model="userAnswer" 
             @keyup.enter="checkAnswer"
             class="answer-input"
             placeholder="Type your translation..."
-            autofocus
           />
           <button @click="checkAnswer" class="action-button primary" :disabled="!userAnswer.trim()">
             Check Answer
           </button>
         </div>
 
-        <div v-else class="result-section">
+        <div v-else ref="resultSection" class="result-section" @keyup.enter="nextWord" tabindex="0">
           <div v-if="checkingAnswer" class="checking-message">
             <span>🔍 Checking translation...</span>
           </div>
@@ -158,7 +158,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import axios from 'axios'
 
 export default {
@@ -169,6 +169,8 @@ export default {
     const targetLanguage = ref('english')
     const useVoice = ref(false)
     const loading = ref(false)
+    const answerInput = ref(null)
+    const resultSection = ref(null)
     
     // Test options from run_word_test.py
     const noWords = ref(null)
@@ -193,6 +195,9 @@ export default {
     })
 
     const wordsList = ref([])
+    const usedWordIndices = ref([])
+    const correctlyAnsweredIndices = ref([])
+    const availableWordsIndices = ref([]) // Maps filtered word indices to original wordsList indices
 
     const loadWordList = async () => {
       try {
@@ -214,21 +219,37 @@ export default {
       loading.value = true
       testStarted.value = true
       
+      // Reset tracking arrays
+      usedWordIndices.value = []
+      correctlyAnsweredIndices.value = []
+      
       // Load word list
       let words = await loadWordList()
+      
+      // Add original indices to each word before any filtering
+      words = words.map((word, index) => ({ ...word, _originalIndex: index }))
       
       // Apply filtering if description is provided
       if (descriptionForWordFiltering.value && descriptionForWordFiltering.value.trim() !== '') {
         try {
+          const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
+          const languagePair = `${startLanguage.value}_${targetLanguage.value}`
+          
           const filterResponse = await axios.post('/api/filter_words', null, {
             params: {
               language: startLanguage.value,
-              description: descriptionForWordFiltering.value
+              description: descriptionForWordFiltering.value,
+              language_pair: languagePair
             }
           })
           
           if (filterResponse.data.filtered_words && filterResponse.data.filtered_words.length > 0) {
-            words = filterResponse.data.filtered_words
+            const filteredWords = filterResponse.data.filtered_words
+            // Match filtered words back to original list to preserve indices
+            words = words.filter(w => 
+              filteredWords.some(fw => fw[lang1Key] === w[lang1Key])
+            )
+            // Note: words still have _originalIndex property from when we loaded them
             console.log(`Filtered to ${words.length} words matching: "${descriptionForWordFiltering.value}"`)
           } else {
             console.log('No words matched the filter, using full word list')
@@ -252,22 +273,86 @@ export default {
       answerSubmitted.value = false
       isCorrect.value = false
 
+      // If there are no words left in the in-memory list, show the no-words UI
+      if (!wordsList.value || wordsList.value.length === 0) {
+        console.log('No words left in wordsList, showing no-words UI')
+        loading.value = false
+        currentWord.value = null
+        return
+      }
+
       try {
         // Capitalize language names to match CSV column names
         const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
         const lang2Key = targetLanguage.value.charAt(0).toUpperCase() + targetLanguage.value.slice(1)
         
+        // Create a filtered list of words based on settings, tracking original indices
+        const availableWords = []
+        const indexMapping = [] // Maps availableWords index to wordsList index
+        
+        wordsList.value.forEach((word) => {
+          const originalIndex = word._originalIndex // Use the stored original index
+          
+          // If hideCorrectlyTranslatedWords is enabled, exclude correctly answered words
+          if (hideCorrectlyTranslatedWords.value && correctlyAnsweredIndices.value.includes(originalIndex)) {
+            return
+          }
+          
+          // Exclude recently used words based on hideUsedWordForNWords
+          if (usedWordIndices.value.length > 0 && hideUsedWordForNWords.value > 0) {
+            const recentlyUsed = usedWordIndices.value.slice(-hideUsedWordForNWords.value)
+            if (recentlyUsed.includes(originalIndex)) {
+              return
+            }
+          }
+          
+          availableWords.push(word)
+          indexMapping.push(originalIndex)
+        })
+        
+        // If no words are available, use the full list (prevents getting stuck)
+        if (availableWords.length === 0) {
+          wordsList.value.forEach((word) => {
+            availableWords.push(word)
+            indexMapping.push(word._originalIndex)
+          })
+        }
+        
+        // Store the index mapping for later use
+        availableWordsIndices.value = indexMapping
+        
+        console.log('Total words in list:', wordsList.value.length)
+        console.log('Available words after filtering:', availableWords.length)
+        console.log('Recently used indices (last N):', usedWordIndices.value.slice(-hideUsedWordForNWords.value))
+        console.log('Correctly answered indices:', correctlyAnsweredIndices.value)
+        console.log('hideCorrectlyTranslatedWords setting:', hideCorrectlyTranslatedWords.value)
+        console.log('Available word indices (first 5):', indexMapping.slice(0, 5))
+        
         const response = await axios.post('/api/create_word', {
-          words_language_1: wordsList.value.map(w => w[lang1Key]),
-          words_language_2: wordsList.value.map(w => w[lang2Key]),
+          words_language_1: availableWords.map(w => w[lang1Key]),
+          words_language_2: availableWords.map(w => w[lang2Key]),
           language_1: startLanguage.value,
           language_2: targetLanguage.value,
           probability_for_sentence_creation: probabilityForSentenceCreation.value,
           max_num_words_in_created_sentence: maxNumWordsInCreatedSentence.value,
-          language_level_for_created_sentence: languageLevelForCreatedSentence.value
+          language_level_for_created_sentence: languageLevelForCreatedSentence.value,
+          original_indices: indexMapping
         })
         
         currentWord.value = response.data.word
+        
+        // Backend returns the original index when we provide `original_indices`.
+        const backendIndex = response.data.word.word_index
+        console.log('Backend returned word_index (original index):', backendIndex)
+        if (backendIndex !== null && backendIndex !== undefined) {
+          const originalWordIndex = backendIndex
+          usedWordIndices.value.push(originalWordIndex)
+          // Store the original index on the word for later use in checkAnswer
+          currentWord.value.original_index = originalWordIndex
+          console.log('Tracked used original index:', originalWordIndex)
+        } else {
+          console.warn('Backend returned invalid word_index:', backendIndex)
+        }
         
         if (useVoice.value && currentWord.value.word_language_1) {
           // Optionally play voice
@@ -278,6 +363,11 @@ export default {
         alert('Error loading word. Make sure the API server is running and word lists exist.')
       } finally {
         loading.value = false
+        // Focus the input field after loading the word
+        await nextTick()
+        if (answerInput.value) {
+          answerInput.value.focus()
+        }
       }
     }
 
@@ -301,6 +391,25 @@ export default {
         
         if (isCorrect.value) {
           stats.value.correct++
+          
+          // Track correctly answered word if hideCorrectlyTranslatedWords is enabled
+          if (hideCorrectlyTranslatedWords.value && currentWord.value && currentWord.value.original_index !== undefined) {
+            const wordIndex = currentWord.value.original_index
+            console.log('🎯 Correct answer! Tracking word with original_index:', wordIndex)
+            console.log('   hideCorrectlyTranslatedWords is:', hideCorrectlyTranslatedWords.value)
+            console.log('   Word:', currentWord.value.word_language_1, '→', currentWord.value.word_language_2)
+            if (!correctlyAnsweredIndices.value.includes(wordIndex)) {
+              correctlyAnsweredIndices.value.push(wordIndex)
+              console.log('   Added to correctlyAnsweredIndices. New list:', correctlyAnsweredIndices.value)
+              // Also remove the word from wordsList to ensure it won't reappear
+              wordsList.value = wordsList.value.filter(w => w._originalIndex !== wordIndex)
+              console.log('   Removed word from wordsList. New length:', wordsList.value.length)
+            } else {
+              console.log('   Already in correctlyAnsweredIndices')
+            }
+          } else {
+            console.log('❌ NOT tracking correct answer. hideCorrectlyTranslatedWords:', hideCorrectlyTranslatedWords.value, 'original_index:', currentWord.value?.original_index)
+          }
         } else {
           stats.value.incorrect++
         }
@@ -311,11 +420,34 @@ export default {
         
         if (isCorrect.value) {
           stats.value.correct++
+          
+          // Track correctly answered word if hideCorrectlyTranslatedWords is enabled
+          if (hideCorrectlyTranslatedWords.value && currentWord.value && currentWord.value.original_index !== undefined) {
+            const wordIndex = currentWord.value.original_index
+            console.log('🎯 Correct answer (fallback)! Tracking word with original_index:', wordIndex)
+            console.log('   Word:', currentWord.value.word_language_1, '→', currentWord.value.word_language_2)
+            if (!correctlyAnsweredIndices.value.includes(wordIndex)) {
+              correctlyAnsweredIndices.value.push(wordIndex)
+              console.log('   Added to correctlyAnsweredIndices. New list:', correctlyAnsweredIndices.value)
+              // Also remove the word from wordsList to ensure it won't reappear
+              wordsList.value = wordsList.value.filter(w => w._originalIndex !== wordIndex)
+              console.log('   Removed word from wordsList. New length:', wordsList.value.length)
+            } else {
+              console.log('   Already in correctlyAnsweredIndices')
+            }
+          } else {
+            console.log('❌ NOT tracking correct answer (fallback). hideCorrectlyTranslatedWords:', hideCorrectlyTranslatedWords.value, 'original_index:', currentWord.value?.original_index)
+          }
         } else {
           stats.value.incorrect++
         }
       } finally {
         checkingAnswer.value = false
+        // Focus the result section after checking answer to enable Enter key for next word
+        await nextTick()
+        if (resultSection.value) {
+          resultSection.value.focus()
+        }
       }
     }
 
@@ -324,6 +456,8 @@ export default {
       currentWord.value = null
       userAnswer.value = ''
       answerSubmitted.value = false
+      usedWordIndices.value = []
+      correctlyAnsweredIndices.value = []
       stats.value = {
         correct: 0,
         incorrect: 0,
@@ -351,6 +485,8 @@ export default {
       isCorrect,
       checkingAnswer,
       stats,
+      answerInput,
+      resultSection,
       startTest,
       nextWord,
       checkAnswer,
@@ -557,6 +693,7 @@ export default {
 
 .result-section {
   text-align: center;
+  outline: none;
 }
 
 .checking-message {

@@ -18,6 +18,7 @@ class CreateWordRequest(BaseModel):
     probability_for_sentence_creation: float
     max_num_words_in_created_sentence: int = 10
     language_level_for_created_sentence: str = "C1"
+    original_indices: list[int] | None = None
     
 app = FastAPI(docs_url="/swagger")
 
@@ -54,6 +55,10 @@ def create_word(request: CreateWordRequest):
         request.language_2.capitalize(): request.words_language_2
     })
 
+    # If caller provided original indices (mapping to the full word list), set them as the DataFrame index
+    if request.original_indices is not None and len(request.original_indices) == len(words):
+        words.index = request.original_indices
+
     word_language_1, word_language_2, word_index = sample_word(
         words,
         request.language_1,
@@ -63,6 +68,13 @@ def create_word(request: CreateWordRequest):
         request.max_num_words_in_created_sentence,
         request.language_level_for_created_sentence
     )
+
+    # Ensure the returned index is a plain Python int for JSON serialization
+    if word_index is not None:
+        try:
+            word_index = int(word_index)
+        except Exception:
+            pass
 
     return {
         "word": {
@@ -109,30 +121,57 @@ def check_translation(user_translation: str, correct_translation: str, be_string
 
 
 @app.post("/filter_words")
-def filter_words(language: str, description: str):
-    """Filter words based on a description using LLM."""
+def filter_words(language: str, description: str, language_pair: str = None):
+    """Filter words based on a description using LLM.
+    
+    Args:
+        language: The language to filter (e.g., 'german', 'english')
+        description: The description to filter by (e.g., 'verbs only')
+        language_pair: Optional language pair in format 'german_english' to use specific word list
+    """
     try:
-        # Get all available word lists for the language
-        import os
-        word_lists_dir = "word_lists"
-        all_words = []
-        
-        # Find all CSV files containing the language
-        for filename in os.listdir(word_lists_dir):
-            if filename.endswith(".csv") and language in filename:
-                filepath = os.path.join(word_lists_dir, filename)
-                words_df = pd.read_csv(filepath)
-                all_words.append(words_df)
-        
-        if not all_words:
-            return {"filtered_words": []}
-        
-        # Combine all word lists
-        combined_words = pd.concat(all_words, ignore_index=True)
+        # If language_pair is provided, use that specific word list
+        if language_pair:
+            parts = language_pair.split('_')
+            if len(parts) == 2:
+                word_list_path = get_word_list(parts[0], parts[1])
+                words_df = pd.read_csv(word_list_path)
+            else:
+                # Fall back to finding all word lists containing the language
+                import os
+                word_lists_dir = "word_lists"
+                all_words = []
+                
+                for filename in os.listdir(word_lists_dir):
+                    if filename.endswith(".csv") and language in filename:
+                        filepath = os.path.join(word_lists_dir, filename)
+                        words_df_temp = pd.read_csv(filepath)
+                        all_words.append(words_df_temp)
+                
+                if not all_words:
+                    return {"filtered_words": []}
+                
+                words_df = pd.concat(all_words, ignore_index=True).drop_duplicates()
+        else:
+            # Find all CSV files containing the language
+            import os
+            word_lists_dir = "word_lists"
+            all_words = []
+            
+            for filename in os.listdir(word_lists_dir):
+                if filename.endswith(".csv") and language in filename:
+                    filepath = os.path.join(word_lists_dir, filename)
+                    words_df_temp = pd.read_csv(filepath)
+                    all_words.append(words_df_temp)
+            
+            if not all_words:
+                return {"filtered_words": []}
+            
+            words_df = pd.concat(all_words, ignore_index=True).drop_duplicates()
         
         # Filter using the description
         filtered_df = filter_word_list_by_description(
-            combined_words,
+            words_df,
             language,
             description,
             llama_params
