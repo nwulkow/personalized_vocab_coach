@@ -20,7 +20,8 @@ def run_test(
         description_for_word_filtering: str | None = None,
         max_num_words_in_created_sentence: int = 10,
         language_level_for_created_sentence: str = "C1",
-        be_stringent: bool = False
+        be_stringent: bool = False,
+        word_batch_size: int = 20
 ):
     """Run a vocabulary test between two languages. 
     Parameters:
@@ -36,6 +37,7 @@ def run_test(
     - max_num_words_in_created_sentence: Maximum number of words in the created sentence.
     - language_level_for_created_sentence: Language level for the created sentence (e.g., "C1").
     - be_stringent: Whether to be stringent in checking the user's translation (e.g., by using a Llama model to check for correctness).
+    - word_batch_size: The number of words to include in each batch when filtering words by description.
     """
     
     if llama_params is not None and len(llama_params.url) > 0:
@@ -46,7 +48,7 @@ def run_test(
     words = pd.read_csv(selected_word_list).squeeze()
 
     if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:
-        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params)
+        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params, word_batch_size=word_batch_size)
         if words_filtered.shape[0] == 0:
             print("No words found matching the description. Using the full word list.")
         else:
@@ -149,7 +151,8 @@ def filter_word_list_by_description(
     words: pd.Series,
     language_1: str,
     description: str,
-    llama_params: Llama_params
+    llama_params: Llama_params,
+    word_batch_size: int = 20,
 ) -> pd.Series:
     """Choose a subset of words from the given word list based on a description.
 
@@ -158,6 +161,7 @@ def filter_word_list_by_description(
     - language_1: The language of the words in the list (e.g., "german").
     - description: A description of the word to choose.
     - llama_params: Parameters for Llama model usage.
+    - word_batch_size: The number of words to include in each batch when sending to the Llama model.
 
     Returns:
     - A tuple containing the word in language 1, the word in language 2, and the index of the word in the original list.
@@ -165,30 +169,32 @@ def filter_word_list_by_description(
     if words.shape[0] == 0:
         return None
     
-    words_list_full = words[language_1.capitalize()].tolist()
-    words_list_full = [str(word) for word in words_list_full]
-    words_list_full_str = ";".join(words_list_full)
+    words_list_full = words[language_1.capitalize()].astype(str).tolist()
+    response_words_collected = []
 
-    prompt = f"""You are given a list of words in {language_1} and a description of a word.
-    Your task is to filter this list of words and return only those words that match the description. The description is as follows: {description}.
-    Here is the list of words:
-    {words_list_full_str}
-    Return the filtered list of words, each word separated by a semicolon. If no words match the description, return an empty string.
-    """
+    for i in range(0, len(words_list_full), word_batch_size):
+        words_batch = words_list_full[i:i + word_batch_size]
+        words_batch_str = ";".join(words_batch)
 
-    prompt = f"""Return only the words that match the description, separated by semicolons. 
-        Do not return any explanations or additional text. Description is as follows: {description}.
-        Here is the list of words:
-        {words_list_full_str}
-    """
-    response_words = respond_to_prompt(
-        prompt,
-        llama_params,
-        temperature=0.1,
-    )
+        prompt = f"""Return only the words that match the description, separated by semicolons.
+            Do not return any explanations or additional text.
+            Description: {description}
+            Words:
+            {words_batch_str}
+            """
 
-    response_words = response_words.strip().split(";")
-    response_words = [word.strip() for word in response_words if word.strip() in words_list_full]
+        response_words_batch = respond_to_prompt(
+            prompt,
+            llama_params,
+            temperature=0.1,
+        )
+
+        parsed_words = [w.strip() for w in response_words_batch.strip().split(";") if w.strip()]
+        parsed_words = [w for w in parsed_words if w in words_batch]
+        response_words_collected.extend(parsed_words)
+
+    # remove duplicates while preserving order
+    response_words = list(dict.fromkeys(response_words_collected))
 
     words_filtered = words[words[language_1.capitalize()].isin(response_words)]
 

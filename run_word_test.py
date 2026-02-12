@@ -7,7 +7,7 @@ llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27
 params = Llama_params(use_cpp=True, llama_llm=llm)
 
 run_test(
-    language_1="english",
+    language_1="french",
     language_2="german",
     no_words=None,
     llama_params=params,
@@ -18,5 +18,6 @@ run_test(
     description_for_word_filtering="Verbs only",
     max_num_words_in_created_sentence=8,
     language_level_for_created_sentence="C2",
-    be_stringent=True
+    be_stringent=True,
+    word_batch_size=15
 )
