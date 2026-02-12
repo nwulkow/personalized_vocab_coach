@@ -19,6 +19,15 @@ class CreateWordRequest(BaseModel):
     max_num_words_in_created_sentence: int = 10
     language_level_for_created_sentence: str = "C1"
     original_indices: list[int] | None = None
+
+class WordPair(BaseModel):
+    word_language_1: str
+    word_language_2: str
+
+class SaveWordListRequest(BaseModel):
+    language_1: str
+    language_2: str
+    words: list[WordPair]
     
 app = FastAPI(docs_url="/swagger")
 
@@ -106,6 +115,29 @@ def get_word_list_endpoint(language_1: str, language_2: str):
         return {"words": words}
     except ValueError as e:
         return {"words": [], "error": str(e)}
+
+
+@app.post("/save_word_list")
+def save_word_list_endpoint(request: SaveWordListRequest):
+    """Save/replace the entire word list for a given language pair."""
+    try:
+        word_list_path = get_word_list(request.language_1, request.language_2)
+        
+        # Create DataFrame with the new words
+        lang1_cap = request.language_1.capitalize()
+        lang2_cap = request.language_2.capitalize()
+        
+        df = pd.DataFrame({
+            lang1_cap: [word.word_language_1 for word in request.words],
+            lang2_cap: [word.word_language_2 for word in request.words]
+        })
+        
+        # Save to CSV (overwriting the old file)
+        df.to_csv(word_list_path, index=False)
+        
+        return {"status": "success", "message": f"Saved {len(request.words)} word pairs"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.post("/check_translation")

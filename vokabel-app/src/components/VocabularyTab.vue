@@ -99,7 +99,10 @@
     <div v-else class="test-panel">
       <div class="test-header">
         <h2>{{ startLanguage.charAt(0).toUpperCase() + startLanguage.slice(1) }} → {{ targetLanguage.charAt(0).toUpperCase() + targetLanguage.slice(1) }}</h2>
-        <button @click="endTest" class="action-button secondary">End Test</button>
+        <div class="header-info">
+          <span class="words-left">{{ wordsList.length }} {{ wordsList.length === 1 ? 'word' : 'words' }} left</span>
+          <button @click="endTest" class="action-button secondary">End Test</button>
+        </div>
       </div>
 
       <div v-if="loading" class="loading">
@@ -634,6 +637,28 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.test-header h2 {
+  margin: 0;
+  color: #667eea;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.words-left {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #667eea;
+  background-color: #f0f4ff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
 }
 
 .test-header .action-button {
