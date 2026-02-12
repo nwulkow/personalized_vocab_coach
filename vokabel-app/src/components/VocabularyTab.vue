@@ -228,58 +228,83 @@ export default {
     }
 
     const startTest = async () => {
-      loading.value = true
-      testStarted.value = true
-      
-      // Reset tracking arrays
-      usedWordIndices.value = []
-      correctlyAnsweredIndices.value = []
-      
-      // Load word list
-      let words = await loadWordList()
-      
-      // Add original indices to each word before any filtering
-      words = words.map((word, index) => ({ ...word, _originalIndex: index }))
-      
-      // Apply filtering if description is provided
-      if (descriptionForWordFiltering.value && descriptionForWordFiltering.value.trim() !== '') {
-        try {
-          const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
-          const languagePair = `${startLanguage.value}_${targetLanguage.value}`
-          
-          const filterResponse = await axios.post('/api/filter_words', null, {
-            params: {
-              language: startLanguage.value,
-              description: descriptionForWordFiltering.value,
-              language_pair: languagePair
-            }
-          })
-          
-          if (filterResponse.data.filtered_words && filterResponse.data.filtered_words.length > 0) {
-            const filteredWords = filterResponse.data.filtered_words
-            // Match filtered words back to original list to preserve indices
-            words = words.filter(w => 
-              filteredWords.some(fw => fw[lang1Key] === w[lang1Key])
-            )
-            // Note: words still have _originalIndex property from when we loaded them
-            console.log(`Filtered to ${words.length} words matching: "${descriptionForWordFiltering.value}"`)
-          } else {
-            console.log('No words matched the filter, using full word list')
-          }
-        } catch (error) {
-          console.error('Error filtering words:', error)
-          // Continue with unfiltered list
+      console.log('startTest called!')
+      try {
+        loading.value = true
+        testStarted.value = true
+        console.log('Test started, loading set to true')
+        
+        // Reset tracking arrays
+        usedWordIndices.value = []
+        correctlyAnsweredIndices.value = []
+        
+        // Load word list
+        console.log('Loading word list...')
+        let words = await loadWordList()
+        console.log('Word list loaded:', words ? words.length : 0, 'words')
+        
+        // Check if we got any words
+        if (!words || words.length === 0) {
+          alert('No words found for this language pair. Please check that the word list exists.')
+          testStarted.value = false
+          loading.value = false
+          return
         }
+        
+        console.log('Adding original indices to words...')
+        // Add original indices to each word before any filtering
+        words = words.map((word, index) => ({ ...word, _originalIndex: index }))
+        
+        // Apply filtering if description is provided
+        if (descriptionForWordFiltering.value && descriptionForWordFiltering.value.trim() !== '') {
+          console.log('Applying word filtering...')
+          try {
+            const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
+            const languagePair = `${startLanguage.value}_${targetLanguage.value}`
+            
+            const filterResponse = await axios.post('/api/filter_words', null, {
+              params: {
+                language: startLanguage.value,
+                description: descriptionForWordFiltering.value,
+                language_pair: languagePair
+              }
+            })
+            
+            if (filterResponse.data.filtered_words && filterResponse.data.filtered_words.length > 0) {
+              const filteredWords = filterResponse.data.filtered_words
+              // Match filtered words back to original list to preserve indices
+              words = words.filter(w => 
+                filteredWords.some(fw => fw[lang1Key] === w[lang1Key])
+              )
+              // Note: words still have _originalIndex property from when we loaded them
+              console.log(`Filtered to ${words.length} words matching: "${descriptionForWordFiltering.value}"`)
+            } else {
+              console.log('No words matched the filter, using full word list')
+            }
+          } catch (error) {
+            console.error('Error filtering words:', error)
+            // Continue with unfiltered list
+          }
+        }
+        
+        if (words && words.length > 0) {
+          wordsList.value = words
+          console.log('Words list set, length:', wordsList.value.length)
+        }
+        
+        console.log('Calling nextWord()...')
+        await nextWord()
+        console.log('nextWord() completed')
+      } catch (error) {
+        console.error('Error starting test:', error)
+        alert('Failed to start the vocabulary test. Error: ' + error.message)
+        testStarted.value = false
+        loading.value = false
       }
-      
-      if (words && words.length > 0) {
-        wordsList.value = words
-      }
-      
-      await nextWord()
     }
 
     const nextWord = async () => {
+      console.log('=== nextWord() START ===')
       loading.value = true
       userAnswer.value = ''
       answerSubmitted.value = false
@@ -294,9 +319,11 @@ export default {
       }
 
       try {
+        console.log('Creating word request...')
         // Capitalize language names to match CSV column names
         const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
         const lang2Key = targetLanguage.value.charAt(0).toUpperCase() + targetLanguage.value.slice(1)
+        console.log('Language keys:', lang1Key, lang2Key)
         
         // Create a filtered list of words based on settings, tracking original indices
         const availableWords = []
@@ -341,6 +368,7 @@ export default {
         console.log('hideCorrectlyTranslatedWords setting:', hideCorrectlyTranslatedWords.value)
         console.log('Available word indices (first 5):', indexMapping.slice(0, 5))
         
+        console.log('Calling /api/create_word...')
         const response = await axios.post('/api/create_word', {
           words_language_1: availableWords.map(w => w[lang1Key]),
           words_language_2: availableWords.map(w => w[lang2Key]),
@@ -352,7 +380,9 @@ export default {
           original_indices: indexMapping
         })
         
+        console.log('API response received:', response.data)
         currentWord.value = response.data.word
+        console.log('currentWord set to:', currentWord.value)
         
         // Backend returns the original index when we provide `original_indices`.
         const backendIndex = response.data.word.word_index
@@ -375,12 +405,23 @@ export default {
         console.error('Error getting word:', error)
         alert('Error loading word. Make sure the API server is running and word lists exist.')
       } finally {
+        console.log('nextWord() finally block - setting loading to false')
         loading.value = false
+        console.log('loading.value is now:', loading.value)
         // Focus the input field after loading the word
         await nextTick()
+        console.log('After nextTick')
         if (answerInput.value) {
           answerInput.value.focus()
+          console.log('Input focused')
+        } else {
+          console.log('answerInput.value is null')
         }
+        console.log('testStarted.value:', testStarted.value)
+        console.log('loading.value:', loading.value)
+        console.log('currentWord.value:', currentWord.value)
+        console.log('answerSubmitted.value:', answerSubmitted.value)
+        console.log('=== nextWord() END ===')
       }
     }
 
@@ -500,6 +541,7 @@ export default {
       stats,
       answerInput,
       resultSection,
+      wordsList,
       startTest,
       nextWord,
       checkAnswer,
