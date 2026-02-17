@@ -21,6 +21,9 @@ def check_equality(word1:str, word2:str, llama_params: Llama_params | None = Non
         if not llama_params:
             return False
         
+        if len(word1) < 2:
+            return False
+        
         prompt = f"""
             Classify the relationship between the following expressions.
 

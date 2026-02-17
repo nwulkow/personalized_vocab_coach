@@ -4,7 +4,7 @@ import numpy as np
 from file_utils import get_word_list
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
-from llama_cpp import Llama
+import datetime
 from ollama_utils import Llama_params, respond_to_prompt
 from ollama_start import start_ollama
 
@@ -21,7 +21,9 @@ def run_test(
         max_num_words_in_created_sentence: int = 10,
         language_level_for_created_sentence: str = "C1",
         be_stringent: bool = False,
-        word_batch_size: int = 20
+        word_batch_size: int = 20,
+        start_date_added: datetime.datetime | None = None,
+        end_date_added: datetime.datetime | None = None
 ):
     """Run a vocabulary test between two languages. 
     Parameters:
@@ -38,6 +40,8 @@ def run_test(
     - language_level_for_created_sentence: Language level for the created sentence (e.g., "C1").
     - be_stringent: Whether to be stringent in checking the user's translation (e.g., by using a Llama model to check for correctness).
     - word_batch_size: The number of words to include in each batch when filtering words by description.
+    - start_date_added: The start date to filter words by their addition date.
+    - end_date_added: The end date to filter words by their addition date.
     """
     
     if llama_params is not None and len(llama_params.url) > 0:
@@ -55,6 +59,13 @@ def run_test(
             words = words_filtered
             print(f"{words.shape[0]} words found matching the description. Using the filtered word list.")
 
+    if start_date_added is not None:
+        words = words[pd.to_datetime(words["date_added"]) >= start_date_added]
+    if end_date_added is not None:
+        words = words[pd.to_datetime(words["date_added"]) <= end_date_added]
+    if words.shape[0] == 0:
+        print("No words found matching the date criteria. Exiting the test.")
+        return
     # shuffle words randomly
     words = words.sample(frac=1).reset_index(drop=True)
     if no_words is not None:

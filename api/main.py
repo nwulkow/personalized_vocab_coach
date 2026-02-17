@@ -107,11 +107,20 @@ def add_word_pair(
 
 
 @app.get("/word_list")
-def get_word_list_endpoint(language_1: str, language_2: str):
+def get_word_list_endpoint(language_1: str, language_2: str, start_date_added: str = None, end_date_added: str = None):
     """Get the word list for a given language pair."""
     try:
         word_list_path = get_word_list(language_1, language_2)
-        words = pd.read_csv(word_list_path).to_dict('records')
+        words = pd.read_csv(word_list_path)
+
+        if start_date_added is not None:
+            start_date_added = pd.to_datetime(start_date_added)
+            words = words[pd.to_datetime(words["date_added"]) >= start_date_added]
+        if end_date_added is not None:
+            end_date_added = pd.to_datetime(end_date_added)
+            words = words[pd.to_datetime(words["date_added"]) <= end_date_added]
+
+        words = words.to_dict('records')
         return {"words": words}
     except ValueError as e:
         return {"words": [], "error": str(e)}

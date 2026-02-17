@@ -1,4 +1,5 @@
 from ollama_utils import Llama_params
+import datetime
 from word_test_runner import run_test
 from llama_cpp import Llama
 
@@ -19,5 +20,7 @@ run_test(
     max_num_words_in_created_sentence=8,
     language_level_for_created_sentence="C2",
     be_stringent=True,
-    word_batch_size=15
+    word_batch_size=15,
+    start_date_added=datetime.datetime(2024, 1, 1),
+    end_date_added=datetime.datetime(2026, 12, 31)
 )

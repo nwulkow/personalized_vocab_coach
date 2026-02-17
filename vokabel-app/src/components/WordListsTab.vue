@@ -27,6 +27,7 @@
       <div class="word-list-header">
         <div class="column-header">{{ language1 }}</div>
         <div class="column-header">{{ language2 }}</div>
+        <div class="column-header date-header">Date Added</div>
         <div class="column-header actions-header">Actions</div>
       </div>
 
@@ -42,6 +43,9 @@
             class="word-input"
             :placeholder="`${language2} word`"
           />
+          <div class="date-display">
+            {{ word.date_added || 'N/A' }}
+          </div>
           <button @click="deleteWord(index)" class="delete-button" title="Delete word">
             🗑️
           </button>
@@ -114,7 +118,8 @@ export default {
         // Transform the data to editable format
         words.value = response.data.words.map(word => ({
           word1: word[langs.lang1] || '',
-          word2: word[langs.lang2] || ''
+          word2: word[langs.lang2] || '',
+          date_added: word.date_added || ''
         }))
       } catch (error) {
         console.error('Error loading word list:', error)
@@ -282,7 +287,7 @@ export default {
 
 .word-list-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px;
+  grid-template-columns: 1fr 1fr 150px 80px;
   gap: 1rem;
   padding: 1rem;
   background-color: #f8f9fa;
@@ -294,6 +299,10 @@ export default {
 
 .column-header {
   text-align: left;
+}
+
+.date-header {
+  text-align: center;
 }
 
 .actions-header {
@@ -308,7 +317,7 @@ export default {
 
 .word-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px;
+  grid-template-columns: 1fr 1fr 150px 80px;
   gap: 1rem;
   padding: 0.75rem 0;
   border-bottom: 1px solid #e0e0e0;
@@ -330,6 +339,15 @@ export default {
 .word-input:focus {
   outline: none;
   border-color: #667eea;
+}
+
+.date-display {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  color: #6c757d;
+  font-size: 0.9rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
 }
 
 .delete-button {

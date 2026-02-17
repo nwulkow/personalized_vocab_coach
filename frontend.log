@@ -2,15 +2,9 @@
 > vokabel-app@1.0.0 dev
 > vite
 
+Port 5173 is in use, trying another one...
 
-  VITE v5.4.21  ready in 148 ms
+  VITE v5.4.21  ready in 174 ms
 
-  ➜  Local:   http://localhost:5173/
+  ➜  Local:   http://localhost:5174/
   ➜  Network: use --host to expose
-4:35:31 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:36:26 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:38:27 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:38:38 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:38:45 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:44:31 PM [vite] hmr update /src/components/VocabularyTab.vue
-4:46:03 PM [vite] hmr update /src/components/VocabularyTab.vue

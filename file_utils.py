@@ -1,5 +1,6 @@
 import glob
 import pandas as pd
+import datetime
 
 def get_word_list(language_1, language_2) -> str:
     """
@@ -42,9 +43,30 @@ def add_word_pair_to_word_list(word_language_1: str, word_language_2: str, langu
     """
 
     word_list_path = get_word_list(language_1, language_2)
-    new_row = pd.DataFrame({language_1.capitalize(): [word_language_1.strip()], language_2.capitalize(): [word_language_2.strip()]})
+    new_row = pd.DataFrame({
+         language_1.capitalize(): [word_language_1.strip()],
+         language_2.capitalize(): [word_language_2.strip()],
+         "date_added": [datetime.datetime.now().strftime("%Y-%m-%d %H:%M")]
+         })
     
-    words: pd.DataFrame = pd.read_csv(word_list_path).squeeze()
+    words: pd.DataFrame = pd.read_csv(word_list_path)
     if not ((words[language_1.capitalize()] == word_language_1.strip()).any() and (words[language_2.capitalize()] == word_language_2.strip()).any()):
         words = pd.concat([words, new_row], ignore_index=True)
         words.to_csv(word_list_path, index=False)
+
+
+def add_date_to_word_list(word_list_path: str) -> None:
+    """
+    Add the current date to the word in the word list file.
+
+    Parameters:
+    - word_list_path: The path to the word list file.
+    """
+    
+    words: pd.DataFrame = pd.read_csv(word_list_path)
+    words["date_added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    words.to_csv(word_list_path, index=False)
+
+
+if __name__ == "__main__":
+    add_date_to_word_list("word_lists/german_french.csv")

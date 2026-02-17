@@ -3,88 +3,100 @@
     <div v-if="!testStarted" class="setup-panel">
       <h2>Start Vocabulary Test</h2>
       
-      <div class="form-group">
-        <label>Start Language (shown to you):</label>
-        <div class="language-selector">
-          <img :src="`/${startLanguage}.png`" :alt="startLanguage" class="flag-icon" />
-          <select v-model="startLanguage" class="language-select">
-            <option value="german">German</option>
-            <option value="english">English</option>
-            <option value="spanish">Spanish</option>
-            <option value="french">French</option>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Start Language:</label>
+          <div class="language-selector">
+            <img :src="`/${startLanguage}.png`" :alt="startLanguage" class="flag-icon" />
+            <select v-model="startLanguage" class="language-select">
+              <option value="german">German</option>
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Target Language:</label>
+          <div class="language-selector">
+            <img :src="`/${targetLanguage}.png`" :alt="targetLanguage" class="flag-icon" />
+            <select v-model="targetLanguage" class="language-select">
+              <option value="german">German</option>
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" v-if="false">
+          <label>Number of words (leave empty for all):</label>
+          <input type="number" v-model.number="noWords" class="text-input" placeholder="Leave empty for all words" min="1" />
+        </div>
+
+        <div class="form-group" v-if="false">
+          <label>Hide used word for N words:</label>
+          <input type="number" v-model.number="hideUsedWordForNWords" class="text-input" min="0" />
+        </div>
+
+        <div class="form-group">
+          <label>Probability for sentence creation (0-1):</label>
+          <input type="number" v-model.number="probabilityForSentenceCreation" class="text-input" min="0" max="1" step="0.1" />
+        </div>
+
+        <div class="form-group">
+          <label>Max words in created sentence:</label>
+          <input type="number" v-model.number="maxNumWordsInCreatedSentence" class="text-input" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Language level for created sentence:</label>
+          <select v-model="languageLevelForCreatedSentence" class="language-select">
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+            <option value="C2">C2</option>
           </select>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Target Language (you translate to):</label>
-        <div class="language-selector">
-          <img :src="`/${targetLanguage}.png`" :alt="targetLanguage" class="flag-icon" />
-          <select v-model="targetLanguage" class="language-select">
-            <option value="german">German</option>
-            <option value="english">English</option>
-            <option value="spanish">Spanish</option>
-            <option value="french">French</option>
-          </select>
+        <div class="form-group">
+          <label>Word filtering description (optional):</label>
+          <input type="text" v-model="descriptionForWordFiltering" class="text-input" placeholder="e.g., 'Verbs only', 'Nouns only'" />
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Number of words (leave empty for all):</label>
-        <input type="number" v-model.number="noWords" class="text-input" placeholder="Leave empty for all words" min="1" />
-      </div>
+        <div class="form-group">
+          <label>Start date:</label>
+          <input type="date" v-model="startDate" class="text-input" />
+        </div>
 
-      <div class="form-group">
-        <label>Hide used word for N words:</label>
-        <input type="number" v-model.number="hideUsedWordForNWords" class="text-input" min="0" />
-      </div>
+        <div class="form-group">
+          <label>End date:</label>
+          <input type="date" v-model="endDate" class="text-input" />
+        </div>
 
-      <div class="form-group">
-        <label>Probability for sentence creation (0-1):</label>
-        <input type="number" v-model.number="probabilityForSentenceCreation" class="text-input" min="0" max="1" step="0.1" />
-      </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" v-model="useVoice" />
+            Enable voice synthesis
+          </label>
+        </div>
 
-      <div class="form-group">
-        <label>Max words in created sentence:</label>
-        <input type="number" v-model.number="maxNumWordsInCreatedSentence" class="text-input" min="1" />
-      </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" v-model="hideCorrectlyTranslatedWords" />
+            Hide correctly translated words
+          </label>
+        </div>
 
-      <div class="form-group">
-        <label>Language level for created sentence:</label>
-        <select v-model="languageLevelForCreatedSentence" class="language-select">
-          <option value="A1">A1</option>
-          <option value="A2">A2</option>
-          <option value="B1">B1</option>
-          <option value="B2">B2</option>
-          <option value="C1">C1</option>
-          <option value="C2">C2</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Word filtering description (optional):</label>
-        <input type="text" v-model="descriptionForWordFiltering" class="text-input" placeholder="e.g., 'Verbs only', 'Nouns only'" />
-      </div>
-
-      <div class="form-group">
-        <label>
-          <input type="checkbox" v-model="useVoice" />
-          Enable voice synthesis
-        </label>
-      </div>
-
-      <div class="form-group">
-        <label>
-          <input type="checkbox" v-model="hideCorrectlyTranslatedWords" />
-          Hide correctly translated words
-        </label>
-      </div>
-
-      <div class="form-group">
-        <label>
-          <input type="checkbox" v-model="beStringent" />
-          Be stringent with answers
-        </label>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" v-model="beStringent" />
+            Be stringent with answers
+          </label>
+        </div>
       </div>
 
       <button @click="startTest" class="action-button primary" :disabled="startLanguage === targetLanguage">
@@ -184,6 +196,8 @@ export default {
     const descriptionForWordFiltering = ref('')
     const hideCorrectlyTranslatedWords = ref(false)
     const beStringent = ref(false)
+    const startDate = ref('')
+    const endDate = ref('')
     
     const currentWord = ref(null)
     const userAnswer = ref('')
@@ -214,12 +228,20 @@ export default {
     const loadWordList = async () => {
       try {
         // Load the word list from CSV
-        const response = await axios.get(`/api/word_list`, {
-          params: {
-            language_1: startLanguage.value,
-            language_2: targetLanguage.value
-          }
-        })
+        const params = {
+          language_1: startLanguage.value,
+          language_2: targetLanguage.value
+        }
+        
+        // Add date filters if provided
+        if (startDate.value) {
+          params.start_date_added = startDate.value
+        }
+        if (endDate.value) {
+          params.end_date_added = endDate.value
+        }
+        
+        const response = await axios.get(`/api/word_list`, { params })
         return response.data.words
       } catch (error) {
         console.error('Error loading word list:', error)
@@ -532,6 +554,8 @@ export default {
       descriptionForWordFiltering,
       hideCorrectlyTranslatedWords,
       beStringent,
+      startDate,
+      endDate,
       loading,
       currentWord,
       userAnswer,
@@ -572,8 +596,15 @@ export default {
   color: #667eea;
 }
 
-.form-group {
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 0;
 }
 
 .form-group label {
@@ -838,5 +869,11 @@ export default {
   font-size: 1.2rem;
   color: #6c757d;
   margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

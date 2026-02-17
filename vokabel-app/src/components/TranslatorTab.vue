@@ -13,7 +13,15 @@
                 <option value="french">French</option>
               </select>
             </div>
-            <textarea v-model="item.sourceText" placeholder="Enter text to translate..." class="text-input" rows="3"></textarea>
+            <textarea 
+              v-model="item.sourceText" 
+              @click="selectText($event)" 
+              @input="setLastEditedField(index, 'source')"
+              @keydown.enter.exact.prevent="handleEnterKey(index, 'source')"
+              placeholder="Enter text to translate..." 
+              class="text-input" 
+              rows="3"
+            ></textarea>
           </div>
 
           <div class="button-group">
@@ -31,7 +39,16 @@
                 <option value="french">French</option>
               </select>
             </div>
-            <textarea v-model="item.translatedText" placeholder="Translation will appear here..." class="text-input readonly" rows="3" readonly></textarea>
+            <textarea 
+              v-model="item.translatedText" 
+              @click="selectText($event)" 
+              @input="setLastEditedField(index, 'translated')"
+              @keydown.enter.exact.prevent="handleEnterKey(index, 'translated')"
+              placeholder="Translation will appear here..." 
+              class="text-input readonly" 
+              rows="3" 
+              readonly
+            ></textarea>
           </div>
         </div>
 
@@ -42,6 +59,9 @@
     </div>
 
     <div class="actions">
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
       <button @click="addWordToList" class="action-button primary" type="button">➕ Add to Word List</button>
     </div>
   </div>
@@ -59,6 +79,31 @@ export default {
       { srcLanguage: 'german', destLanguage: 'spanish', sourceText: '', translatedText: '', speakTranslated: false },
       { srcLanguage: 'german', destLanguage: 'french', sourceText: '', translatedText: '', speakTranslated: false }
     ])
+
+    const lastEditedField = ref({ index: 0, field: 'source' })
+    const successMessage = ref('')
+
+    const selectText = (event) => {
+      // Use setTimeout to ensure selection happens after the click event completes
+      setTimeout(() => {
+        event.target.select()
+      }, 0)
+    }
+
+    const setLastEditedField = (index, field) => {
+      lastEditedField.value = { index, field }
+    }
+
+    const handleEnterKey = (index, field) => {
+      // Translate in the direction of the last edited field
+      if (field === 'source') {
+        translateItem(index)
+      } else if (field === 'translated') {
+        // If user edited translated field, translate back (swap first)
+        swapLanguages(index)
+        translateItem(index)
+      }
+    }
 
     const translateItem = async (index) => {
       const item = translationItems.value[index]
@@ -93,20 +138,40 @@ export default {
       const validItem = translationItems.value.find(i => i.sourceText.trim() && i.translatedText.trim())
       if (!validItem) { alert('Please translate at least one text before adding to word list.'); return }
       try {
+        const lang1 = validItem.srcLanguage.charAt(0).toUpperCase() + validItem.srcLanguage.slice(1)
+        const lang2 = validItem.destLanguage.charAt(0).toUpperCase() + validItem.destLanguage.slice(1)
+        
         await axios.post('/api/add_word_pair', null, { params: {
           word_language_1: validItem.sourceText,
           word_language_2: validItem.translatedText,
           language_1: validItem.srcLanguage,
           language_2: validItem.destLanguage
         }})
-        alert('Word pair added to list successfully!')
+        
+        // Show detailed success message
+        successMessage.value = `Added "${validItem.sourceText}" → "${validItem.translatedText}" to ${lang1}/${lang2} word list`
+        
+        // Auto-hide message after 2 seconds
+        setTimeout(() => {
+          successMessage.value = ''
+        }, 2000)
       } catch (err) {
         console.error('Error adding word pair:', err)
         alert('Error adding word pair to list. Make sure the API server is running.')
       }
     }
 
-    return { translationItems, translateItem, swapLanguages, addWordToList }
+    return { 
+      translationItems, 
+      lastEditedField, 
+      successMessage,
+      translateItem, 
+      swapLanguages, 
+      addWordToList,
+      selectText,
+      setLastEditedField,
+      handleEnterKey
+    }
   }
 }
 </script>
@@ -133,14 +198,36 @@ export default {
 .voice-option { margin-top:1rem; padding-top:1rem; border-top:1px solid #e0e0e0 }
 .voice-option label { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:#667eea }
 .voice-option input[type="checkbox"] { width:16px; height:16px }
-.actions { display:flex; justify-content:flex-end; padding-top:1rem }
+.actions { display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding-top:1rem }
 .action-button { padding:1rem 2rem; font-size:1.1rem; font-weight:600; border:none; border-radius:8px; cursor:pointer }
 .action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
 .action-button.primary:hover { transform:translateY(-2px) }
+.success-message {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(21, 87, 36, 0.2);
+  animation: slideIn 0.3s ease-out;
+  white-space: nowrap;
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 @media (max-width:768px) {
   .translation-row { grid-template-columns:1fr; gap:1rem }
   .button-group { flex-direction:row; width:100%; gap:0.5rem }
   .swap-button, .translate-button { flex:1 }
+  .actions { flex-direction: column-reverse; align-items: stretch; }
+  .success-message { white-space: normal; text-align: center; }
 }
 </style>
             .action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
