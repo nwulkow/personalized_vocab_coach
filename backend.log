@@ -7119,3 +7119,129 @@ INFO:     127.0.0.1:57330 - "POST /translate?text=ich+habe+ihn+aufgehalten&src_l
 INFO:     127.0.0.1:57335 - "POST /add_word_pair?word_language_1=ich+habe+ihn+aufgehalten&word_language_2=Je+l%27ai+arr%C3%AAt%C3%A9&language_1=german&language_2=french HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57341 - "POST /translate?text=to+aggrevate&src_language=english&dest_language=german&speak_translated=false HTTP/1.1" 200 OK
 INFO:     127.0.0.1:57346 - "POST /add_word_pair?word_language_1=to+aggrevate&word_language_2=verschlimmern&language_1=english&language_2=german HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57359 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57361 - "GET /word_list?language_1=german&language_2=french HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57367 - "POST /save_word_list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57370 - "GET /word_list?language_1=german&language_2=french HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57383 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    2159.87 ms /   109 tokens (   19.82 ms per token,    50.47 tokens per second)
+llama_perf_context_print:        eval time =    6336.41 ms /    46 runs   (  137.75 ms per token,     7.26 tokens per second)
+llama_perf_context_print:       total time =    8544.16 ms /   155 tokens
+llama_perf_context_print:    graphs reused =         44
+Llama.generate: 47 prefix-match hit, remaining 47 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =     958.45 ms /    47 tokens (   20.39 ms per token,    49.04 tokens per second)
+llama_perf_context_print:        eval time =   57643.55 ms /   417 runs   (  138.23 ms per token,     7.23 tokens per second)
+llama_perf_context_print:       total time =   58769.49 ms /   464 tokens
+llama_perf_context_print:    graphs reused =        403
+INFO:     127.0.0.1:57386 - "POST /filter_words?language=german&description=the+15+most+rarely+used+words+among+the+list&language_pair=german_spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57398 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "POST /check_translation?user_translation=pie+de+queso&correct_translation=Pie+de+queso&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57406 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57410 - "POST /check_translation?user_translation=a+pesar+de&correct_translation=a+pesar+de&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57424 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+Llama.generate: 30 prefix-match hit, remaining 83 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    1973.81 ms /    83 tokens (   23.78 ms per token,    42.05 tokens per second)
+llama_perf_context_print:        eval time =    7839.57 ms /    58 runs   (  135.17 ms per token,     7.40 tokens per second)
+llama_perf_context_print:       total time =    9841.30 ms /   141 tokens
+llama_perf_context_print:    graphs reused =         55
+Llama.generate: 51 prefix-match hit, remaining 47 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =     946.91 ms /    47 tokens (   20.15 ms per token,    49.63 tokens per second)
+llama_perf_context_print:        eval time =   56108.25 ms /   413 runs   (  135.86 ms per token,     7.36 tokens per second)
+llama_perf_context_print:       total time =   57286.56 ms /   460 tokens
+llama_perf_context_print:    graphs reused =        400
+INFO:     127.0.0.1:57427 - "POST /filter_words?language=german&description=only+the+most+uncommon+words+in+the+list+(15-20)&language_pair=german_spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57432 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57435 - "POST /check_translation?user_translation=fuga&correct_translation=fuga&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 46 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    1200.30 ms /    46 tokens (   26.09 ms per token,    38.32 tokens per second)
+llama_perf_context_print:        eval time =    1889.97 ms /    14 runs   (  135.00 ms per token,     7.41 tokens per second)
+llama_perf_context_print:       total time =    3098.81 ms /    60 tokens
+llama_perf_context_print:    graphs reused =         13
+INFO:     127.0.0.1:57438 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57444 - "POST /check_translation?user_translation=l&correct_translation=El+oso+rechaz%C3%B3+la+alegor%C3%ADa+de+la+existencia.&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57447 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57450 - "POST /check_translation?user_translation=disparar&correct_translation=disparar&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57453 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57456 - "POST /check_translation?user_translation=alcalde&correct_translation=alcalde&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57459 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57462 - "POST /check_translation?user_translation=azotar&correct_translation=azotar&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57465 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57469 - "POST /check_translation?user_translation=bucear&correct_translation=bucear&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57472 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57475 - "POST /check_translation?user_translation=huella&correct_translation=huella&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 18 prefix-match hit, remaining 29 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =     872.60 ms /    29 tokens (   30.09 ms per token,    33.23 tokens per second)
+llama_perf_context_print:        eval time =    2296.73 ms /    17 runs   (  135.10 ms per token,     7.40 tokens per second)
+llama_perf_context_print:       total time =    3191.25 ms /    46 tokens
+llama_perf_context_print:    graphs reused =         16
+INFO:     127.0.0.1:57478 - "POST /create_word HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 135 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    2478.86 ms /   135 tokens (   18.36 ms per token,    54.46 tokens per second)
+llama_perf_context_print:        eval time =     273.29 ms /     2 runs   (  136.65 ms per token,     7.32 tokens per second)
+llama_perf_context_print:       total time =    2753.32 ms /   137 tokens
+llama_perf_context_print:    graphs reused =          1
+INFO:     127.0.0.1:57483 - "POST /check_translation?user_translation=una+borrasca+dura+azot%C3%B3+por+los+niveles&correct_translation=Una+tormenta+implacable+azot%C3%B3+las+llanuras+%C3%A1ridas&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 47 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    1104.85 ms /    47 tokens (   23.51 ms per token,    42.54 tokens per second)
+llama_perf_context_print:        eval time =    2020.17 ms /    15 runs   (  134.68 ms per token,     7.43 tokens per second)
+llama_perf_context_print:       total time =    3134.51 ms /    62 tokens
+llama_perf_context_print:    graphs reused =         14
+INFO:     127.0.0.1:57487 - "POST /create_word HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 139 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    2576.17 ms /   139 tokens (   18.53 ms per token,    53.96 tokens per second)
+llama_perf_context_print:        eval time =     275.22 ms /     2 runs   (  137.61 ms per token,     7.27 tokens per second)
+llama_perf_context_print:       total time =    2852.64 ms /   141 tokens
+llama_perf_context_print:    graphs reused =          1
+INFO:     127.0.0.1:57492 - "POST /check_translation?user_translation=el+experto+technophilo+no+pudo+apagar+el+systema+viejo&correct_translation=El+experto+tecn%C3%B3filo+no+pudo+desactivar+el+sistema+obsoleto&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 46 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    1168.88 ms /    46 tokens (   25.41 ms per token,    39.35 tokens per second)
+llama_perf_context_print:        eval time =    2289.84 ms /    17 runs   (  134.70 ms per token,     7.42 tokens per second)
+llama_perf_context_print:       total time =    3470.82 ms /    63 tokens
+llama_perf_context_print:    graphs reused =         16
+INFO:     127.0.0.1:57495 - "POST /create_word HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 134 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    2675.80 ms /   134 tokens (   19.97 ms per token,    50.08 tokens per second)
+llama_perf_context_print:        eval time =     273.26 ms /     2 runs   (  136.63 ms per token,     7.32 tokens per second)
+llama_perf_context_print:       total time =    2950.67 ms /   136 tokens
+llama_perf_context_print:    graphs reused =          1
+INFO:     127.0.0.1:57506 - "POST /check_translation?user_translation=er+perpetrador+intent%C3%B3+agredir+el+xxx+sin+provocacion&correct_translation=El+perpetrador+intent%C3%B3+atacar+al+testigo+sin+provocaci%C3%B3n&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 46 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =     958.54 ms /    46 tokens (   20.84 ms per token,    47.99 tokens per second)
+llama_perf_context_print:        eval time =    2036.66 ms /    15 runs   (  135.78 ms per token,     7.37 tokens per second)
+llama_perf_context_print:       total time =    3004.17 ms /    61 tokens
+llama_perf_context_print:    graphs reused =         14
+INFO:     127.0.0.1:57509 - "POST /create_word HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 136 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    2586.78 ms /   136 tokens (   19.02 ms per token,    52.57 tokens per second)
+llama_perf_context_print:        eval time =     272.84 ms /     2 runs   (  136.42 ms per token,     7.33 tokens per second)
+llama_perf_context_print:       total time =    2860.76 ms /   138 tokens
+llama_perf_context_print:    graphs reused =          1
+INFO:     127.0.0.1:57514 - "POST /check_translation?user_translation=en+enchufe+inici%C3%B3+una+reaction+consecutiva+que+no+estaba+esperado&correct_translation=El+enchufe+provoc%C3%B3+una+reacci%C3%B3n+en+cadena+inesperada&be_stringent=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57517 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57520 - "POST /check_translation?user_translation=pie+de+queso&correct_translation=Pie+de+queso&be_stringent=false HTTP/1.1" 200 OK
+Llama.generate: 1 prefix-match hit, remaining 45 prompt tokens to eval
+llama_perf_context_print:        load time =    2161.56 ms
+llama_perf_context_print: prompt eval time =    1107.30 ms /    45 tokens (   24.61 ms per token,    40.64 tokens per second)
+llama_perf_context_print:        eval time =    2153.32 ms /    16 runs   (  134.58 ms per token,     7.43 tokens per second)
+llama_perf_context_print:       total time =    3270.44 ms /    61 tokens
+llama_perf_context_print:    graphs reused =         15
+INFO:     127.0.0.1:57523 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57531 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [50179]
+INFO:     Stopping reloader process [50176]

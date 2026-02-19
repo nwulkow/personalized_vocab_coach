@@ -118,7 +118,7 @@
       </div>
 
       <div v-if="loading" class="loading">
-        <p>Loading next word...</p>
+        <p>{{ loadingMessage }}</p>
       </div>
 
       <div v-else-if="currentWord" class="word-card">
@@ -184,6 +184,7 @@ export default {
     const targetLanguage = ref('english')
     const useVoice = ref(false)
     const loading = ref(false)
+    const loadingMessage = ref('Loading next word...')
     const answerInput = ref(null)
     const resultSection = ref(null)
     
@@ -253,6 +254,7 @@ export default {
       console.log('startTest called!')
       try {
         loading.value = true
+        loadingMessage.value = 'Assembling word list...'
         testStarted.value = true
         console.log('Test started, loading set to true')
         
@@ -328,6 +330,7 @@ export default {
     const nextWord = async () => {
       console.log('=== nextWord() START ===')
       loading.value = true
+      loadingMessage.value = 'Loading next word...'
       userAnswer.value = ''
       answerSubmitted.value = false
       isCorrect.value = false
@@ -557,6 +560,7 @@ export default {
       startDate,
       endDate,
       loading,
+      loadingMessage,
       currentWord,
       userAnswer,
       answerSubmitted,
