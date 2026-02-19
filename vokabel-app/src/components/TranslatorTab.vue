@@ -118,6 +118,8 @@ export default {
           }
         })
         item.translatedText = response.data.translated_text
+        // Track that this item was translated
+        lastEditedField.value = { index, field: 'source' }
       } catch (err) {
         console.error('Translation error:', err)
         alert('Error translating text. Make sure the API server is running.')
@@ -135,8 +137,16 @@ export default {
     }
 
     const addWordToList = async () => {
-      const validItem = translationItems.value.find(i => i.sourceText.trim() && i.translatedText.trim())
-      if (!validItem) { alert('Please translate at least one text before adding to word list.'); return }
+      // Use the last edited item instead of just finding the first valid one
+      const lastIndex = lastEditedField.value.index
+      const validItem = translationItems.value[lastIndex]
+      
+      // Check if the last edited item has both texts filled
+      if (!validItem.sourceText.trim() || !validItem.translatedText.trim()) {
+        alert('Please translate the text before adding to word list.')
+        return
+      }
+      
       try {
         const lang1 = validItem.srcLanguage.charAt(0).toUpperCase() + validItem.srcLanguage.slice(1)
         const lang2 = validItem.destLanguage.charAt(0).toUpperCase() + validItem.destLanguage.slice(1)
