@@ -69,4 +69,4 @@ def add_date_to_word_list(word_list_path: str) -> None:
 
 
 if __name__ == "__main__":
-    add_date_to_word_list("word_lists/german_french.csv")
+    add_date_to_word_list("word_lists/german_spanish.csv")
