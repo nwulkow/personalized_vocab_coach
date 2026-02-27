@@ -64,7 +64,7 @@ def add_date_to_word_list(word_list_path: str) -> None:
     """
     
     words: pd.DataFrame = pd.read_csv(word_list_path)
-    words["date_added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    words.loc[words["date_added"].isna() | (words["date_added"] == ""), "date_added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     words.to_csv(word_list_path, index=False)
 
 

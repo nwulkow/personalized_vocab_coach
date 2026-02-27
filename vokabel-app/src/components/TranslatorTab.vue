@@ -39,16 +39,34 @@
                 <option value="french">French</option>
               </select>
             </div>
-            <textarea 
-              v-model="item.translatedText" 
-              @click="selectText($event)" 
-              @input="setLastEditedField(index, 'translated')"
-              @keydown.enter.exact.prevent="handleEnterKey(index, 'translated')"
-              placeholder="Translation will appear here..." 
-              class="text-input readonly" 
-              rows="3" 
-              readonly
-            ></textarea>
+            <div class="translation-output-row">
+              <textarea 
+                v-model="item.translatedText" 
+                @click="selectText($event)" 
+                @input="setLastEditedField(index, 'translated')"
+                @keydown.enter.exact.prevent="handleEnterKey(index, 'translated')"
+                placeholder="Translation will appear here..." 
+                class="text-input readonly" 
+                rows="3" 
+                readonly
+              ></textarea>
+              <button
+                @click="showAlternatives(index)"
+                class="alternatives-button"
+                :disabled="!item.translatedText.trim() || item.loadingAlternatives"
+                type="button"
+                title="Show alternative translations"
+              >{{ item.loadingAlternatives ? '⏳' : 'Show\nalternatives' }}</button>
+            </div>
+            <div v-if="item.alternatives && item.alternatives.length > 0" class="alternatives-row">
+              <button
+                v-for="(alt, altIndex) in item.alternatives"
+                :key="altIndex"
+                @click="selectAlternative(index, alt)"
+                class="alternative-button"
+                type="button"
+              >{{ alt }}</button>
+            </div>
           </div>
         </div>
 
@@ -75,9 +93,9 @@ export default {
   name: 'TranslatorTab',
   setup() {
     const translationItems = ref([
-      { srcLanguage: 'german', destLanguage: 'english', sourceText: '', translatedText: '', speakTranslated: false },
-      { srcLanguage: 'german', destLanguage: 'spanish', sourceText: '', translatedText: '', speakTranslated: false },
-      { srcLanguage: 'german', destLanguage: 'french', sourceText: '', translatedText: '', speakTranslated: false }
+      { srcLanguage: 'german', destLanguage: 'english', sourceText: '', translatedText: '', speakTranslated: false, alternatives: [], loadingAlternatives: false },
+      { srcLanguage: 'german', destLanguage: 'spanish', sourceText: '', translatedText: '', speakTranslated: false, alternatives: [], loadingAlternatives: false },
+      { srcLanguage: 'german', destLanguage: 'french', sourceText: '', translatedText: '', speakTranslated: false, alternatives: [], loadingAlternatives: false }
     ])
 
     const lastEditedField = ref({ index: 0, field: 'source' })
@@ -118,6 +136,7 @@ export default {
           }
         })
         item.translatedText = response.data.translated_text
+        item.alternatives = []
         // Track that this item was translated
         lastEditedField.value = { index, field: 'source' }
       } catch (err) {
@@ -134,6 +153,34 @@ export default {
       const tmpText = item.sourceText
       item.sourceText = item.translatedText
       item.translatedText = tmpText
+    }
+
+    const showAlternatives = async (index) => {
+      const item = translationItems.value[index]
+      if (!item.translatedText.trim()) return
+      item.loadingAlternatives = true
+      item.alternatives = []
+      try {
+        const response = await axios.post('/api/show_alternatives', null, {
+          params: {
+            word: item.sourceText,
+            src_language: item.srcLanguage,
+            dest_language: item.destLanguage,
+            google_translation: item.translatedText
+          }
+        })
+        item.alternatives = response.data.alternatives
+      } catch (err) {
+        console.error('Error fetching alternatives:', err)
+        alert('Error fetching alternatives. Make sure the API server is running.')
+      } finally {
+        item.loadingAlternatives = false
+      }
+    }
+
+    const selectAlternative = (index, alt) => {
+      translationItems.value[index].translatedText = alt
+      translationItems.value[index].alternatives = []
     }
 
     const addWordToList = async () => {
@@ -178,6 +225,8 @@ export default {
       translateItem, 
       swapLanguages, 
       addWordToList,
+      showAlternatives,
+      selectAlternative,
       selectText,
       setLastEditedField,
       handleEnterKey
@@ -201,6 +250,14 @@ export default {
 .text-input { width:100%; padding:0.75rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem; font-family:inherit; resize:vertical }
 .text-input:focus { outline:none; border-color:#667eea }
 .text-input.readonly { background:#f8f9fa; cursor:default }
+.translation-output-row { display:flex; gap:0.5rem; align-items:flex-start }
+.translation-output-row .text-input { flex:1 }
+.alternatives-button { padding:0.5rem 0.6rem; background:linear-gradient(135deg,#764ba2 0%,#667eea 100%); color:white; border:none; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; white-space:pre-line; line-height:1.4; flex-shrink:0; align-self:stretch }
+.alternatives-button:disabled { opacity:0.5; cursor:not-allowed }
+.alternatives-button:not(:disabled):hover { transform:scale(1.03) }
+.alternatives-row { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem }
+.alternative-button { padding:0.4rem 0.85rem; background:white; color:#667eea; border:2px solid #667eea; border-radius:6px; font-size:0.9rem; cursor:pointer; transition:background 0.15s, color 0.15s }
+.alternative-button:hover { background:#667eea; color:white }
 .swap-button { padding:0.5rem 1rem; background:#6c757d; color:white; border:none; border-radius:6px; font-size:1.5rem; font-weight:600; cursor:pointer }
 .swap-button:hover { background:#5a6268; transform:scale(1.03) }
 .translate-button { padding:1rem 1.5rem; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; align-self:center }
