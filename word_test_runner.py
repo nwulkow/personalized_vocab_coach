@@ -76,7 +76,7 @@ def run_test(
 
     words_to_sample_from = words.copy()
     while continue_test:
-        word_language_1, word_language_2, word_index = sample_word(
+        word_language_1, word_language_2, word_index, original_word_language_1 = sample_word(
             words_to_sample_from,
             language_1,
             language_2,
@@ -88,7 +88,7 @@ def run_test(
         last_used_words_indices.append(word_index)
         last_used_words_indices = last_used_words_indices[-hide_used_word_for_n_words:]
         
-        if word_language_1 is None or word_language_2 is None:
+        if word_language_1 is None or word_language_2 is None or word_index is None:
             print("No more words available for testing.")
             break
 
@@ -98,7 +98,7 @@ def run_test(
 
         user_input = input(f"Enter the {language_2} translation: ").strip()
         
-        if check_equality(user_input, word_language_2, llama_params=llama_params, be_stringent=be_stringent):
+        if check_equality(user_input, word_language_2, llama_params=llama_params, be_stringent=be_stringent, word_to_pay_attention_to=original_word_language_1):
             print("✓ Correct!")
             if hide_correctly_translated_words:
                 words = words.loc[words.index.difference([word_index])]
@@ -118,7 +118,8 @@ def sample_word(
     probability_for_sentence_creation: float,
     llama_params: Llama_params | None = None,
     max_num_words_in_created_sentence: int = 10,
-    language_level_for_created_sentence: str = "C1"
+    language_level_for_created_sentence: str = "C1",
+    remark: str | None = None
 ) -> tuple[str, str, int]:
     """Sample a word from the given word list.
     
@@ -130,18 +131,20 @@ def sample_word(
     - llama_params: Parameters for Llama model usage.
     - max_num_words_in_created_sentence: Maximum number of words in the created sentence.
     - language_level_for_created_sentence: Language level for the created sentence (e.g., "C1").
+    - remark: Additional remark to include in the prompt.
 
     Returns:
     - A tuple containing the word in language 1, the word in language 2, and the index of the word in the original list.
     """
     if words.shape[0] == 0:
-        return None, None, None
+        return None, None, None, None
     
     word = words.sample(n=1)
     word_index = word.index[0]
     
     word_language_1 = word[language_1.capitalize()].values[0]
     word_language_2 = word[language_2.capitalize()].values[0]
+    original_word_language_1 = word_language_1
     num_words_in_word_language_1 = len(str(word_language_1).split())
     a = np.random.rand()
     if num_words_in_word_language_1 < 3 and a < probability_for_sentence_creation and llama_params is not None:
@@ -151,10 +154,11 @@ def sample_word(
                 language_2,
                 llama_params=llama_params,
                 max_num_words=max_num_words_in_created_sentence,
-                language_level=language_level_for_created_sentence
+                language_level=language_level_for_created_sentence,
+                remark=remark
     )
 
-    return word_language_1, word_language_2, word_index
+    return word_language_1, word_language_2, word_index, original_word_language_1
 
 
 

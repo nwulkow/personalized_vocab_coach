@@ -40,14 +40,19 @@
           <input type="number" v-model.number="hideUsedWordForNWords" class="text-input" min="0" />
         </div>
 
-        <div class="form-group">
-          <label>Probability for sentence creation (0-1):</label>
-          <input type="number" v-model.number="probabilityForSentenceCreation" class="text-input" min="0" max="1" step="0.1" />
-        </div>
-
-        <div class="form-group">
-          <label>Max words in created sentence:</label>
-          <input type="number" v-model.number="maxNumWordsInCreatedSentence" class="text-input" min="1" />
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Probability for sentence creation:</label>
+            <input type="number" v-model.number="probabilityForSentenceCreation" class="text-input" min="0" max="1" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>Max words in sentence:</label>
+            <input type="number" v-model.number="maxNumWordsInCreatedSentence" class="text-input" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Remark for sentence creation (optional):</label>
+            <input type="text" v-model="remark" class="text-input" placeholder="e.g., 'Use formal register'" />
+          </div>
         </div>
 
         <div class="form-group">
@@ -69,12 +74,18 @@
 
         <div class="form-group">
           <label>Start date:</label>
-          <input type="date" v-model="startDate" class="text-input" />
+          <div class="date-input-row">
+            <input type="date" v-model="startDate" class="text-input" />
+            <button @click="startDate = ''" class="clear-date-button" type="button" title="Clear start date">✕</button>
+          </div>
         </div>
 
         <div class="form-group">
           <label>End date:</label>
-          <input type="date" v-model="endDate" class="text-input" />
+          <div class="date-input-row">
+            <input type="date" v-model="endDate" class="text-input" />
+            <button @click="endDate = ''" class="clear-date-button" type="button" title="Clear end date">✕</button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -124,7 +135,7 @@
       <div v-else-if="currentWord" class="word-card">
         <div class="word-display">
           <label>{{ startLanguage.charAt(0).toUpperCase() + startLanguage.slice(1) }}:</label>
-          <h3>{{ currentWord.word_language_1 }}</h3>
+          <h3 v-html="highlightWord(currentWord.word_language_1, currentWord.original_word_language_1)"></h3>
         </div>
 
         <div v-if="!answerSubmitted" class="answer-section">
@@ -195,6 +206,7 @@ export default {
     const maxNumWordsInCreatedSentence = ref(10)
     const languageLevelForCreatedSentence = ref('C1')
     const descriptionForWordFiltering = ref('')
+    const remark = ref('')
     const hideCorrectlyTranslatedWords = ref(false)
     const beStringent = ref(false)
     const startDate = ref('')
@@ -402,7 +414,8 @@ export default {
           probability_for_sentence_creation: probabilityForSentenceCreation.value,
           max_num_words_in_created_sentence: maxNumWordsInCreatedSentence.value,
           language_level_for_created_sentence: languageLevelForCreatedSentence.value,
-          original_indices: indexMapping
+          original_indices: indexMapping,
+          remark: remark.value.trim() !== '' ? remark.value.trim() : null
         })
         
         console.log('API response received:', response.data)
@@ -462,7 +475,8 @@ export default {
           params: {
             user_translation: userAnswer.value,
             correct_translation: currentWord.value.word_language_2,
-            be_stringent: beStringent.value
+            be_stringent: beStringent.value,
+            word_to_pay_attention_to: currentWord.value.original_word_language_1 || null
           }
         })
         
@@ -530,6 +544,13 @@ export default {
       }
     }
 
+    const highlightWord = (sentence, originalWord) => {
+      if (!sentence || !originalWord || sentence === originalWord) return sentence
+      const escaped = originalWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(`(${escaped})`, 'i')
+      return sentence.replace(regex, '<u>$1</u>')
+    }
+
     const endTest = () => {
       testStarted.value = false
       currentWord.value = null
@@ -555,6 +576,7 @@ export default {
       maxNumWordsInCreatedSentence,
       languageLevelForCreatedSentence,
       descriptionForWordFiltering,
+      remark,
       hideCorrectlyTranslatedWords,
       beStringent,
       startDate,
@@ -573,7 +595,8 @@ export default {
       startTest,
       nextWord,
       checkAnswer,
-      endTest
+      endTest,
+      highlightWord
     }
   }
 }
@@ -605,6 +628,13 @@ export default {
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+}
+
+.form-row-3 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
 }
 
 .form-group {
@@ -664,6 +694,37 @@ export default {
 .text-input:focus {
   outline: none;
   border-color: #667eea;
+}
+
+.date-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-input-row .text-input {
+  flex: 1;
+}
+
+.clear-date-button {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.clear-date-button:hover {
+  background: #b02a37;
+  transform: scale(1.1);
 }
 
 .action-button {

@@ -11,7 +11,8 @@ def create_sentence_from_word(
     llama_params: Llama_params,
     temperature: float = 0.7,
     max_num_words: int = 10,
-    language_level: str = "C1"
+    language_level: str = "C1",
+    remark: str | None = None
 ) -> tuple[str, str]:
     
     if word.startswith("to "):
@@ -20,6 +21,7 @@ def create_sentence_from_word(
     prompt = (
         f"Create a simple sentence (up to {max_num_words} words) in {language_1} using the word '{word.split(',')[0].strip()}' "
         f"The sentences should have maximal difficulty for a language learner at the {language_level} level. "
+        f"{remark if remark else ''}"
         f"Only (!) return the created sentence and nothing more!"
     )
 

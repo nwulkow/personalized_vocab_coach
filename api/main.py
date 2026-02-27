@@ -19,6 +19,7 @@ class CreateWordRequest(BaseModel):
     max_num_words_in_created_sentence: int = 10
     language_level_for_created_sentence: str = "C1"
     original_indices: list[int] | None = None
+    remark: str | None = None
 
 class WordPair(BaseModel):
     word_language_1: str
@@ -78,14 +79,15 @@ def create_word(request: CreateWordRequest):
     if request.original_indices is not None and len(request.original_indices) == len(words):
         words.index = request.original_indices
 
-    word_language_1, word_language_2, word_index = sample_word(
+    word_language_1, word_language_2, word_index, original_word_language_1 = sample_word(
         words,
         request.language_1,
         request.language_2,
         request.probability_for_sentence_creation,
         llama_params,
         request.max_num_words_in_created_sentence,
-        request.language_level_for_created_sentence
+        request.language_level_for_created_sentence,
+        remark=request.remark
     )
 
     # Ensure the returned index is a plain Python int for JSON serialization
@@ -99,7 +101,8 @@ def create_word(request: CreateWordRequest):
         "word": {
             "word_language_1": word_language_1,
             "word_language_2": word_language_2,
-            "word_index": word_index
+            "word_index": word_index,
+            "original_word_language_1": original_word_language_1
         }
     }
 
@@ -160,13 +163,14 @@ def save_word_list_endpoint(request: SaveWordListRequest):
 
 
 @app.post("/check_translation")
-def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False):
+def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False, word_to_pay_attention_to: str | None = None):
     """Check if a user's translation is correct."""
     is_correct = check_equality(
         user_translation,
         correct_translation,
         llama_params=llama_params,
-        be_stringent=be_stringent
+        be_stringent=be_stringent,
+        word_to_pay_attention_to=word_to_pay_attention_to
     )
     return {"is_correct": is_correct}
 
