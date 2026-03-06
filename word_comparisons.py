@@ -15,8 +15,8 @@ def check_equality(word1:str, word2:str, llama_params: Llama_params | None = Non
     Returns:
         bool: True if the words are identical, False otherwise.
     """
-    word1 = word1.strip().lower().replace("!", "").replace(".", "").replace(",", "").replace("?", "").replace("¿", "")
-    word2 = word2.strip().lower().replace("!", "").replace(".", "").replace(",", "").replace("?", "").replace("¿", "")
+    word1 = word1.strip().lower().replace("!", "").replace(".", "").replace(",", "").replace("?", "").replace("¿", "").replace("í", "i").replace("á", "a").replace("é", "e").replace("ó", "o").replace("ú", "u")
+    word2 = word2.strip().lower().replace("!", "").replace(".", "").replace(",", "").replace("?", "").replace("¿", "").replace("í", "i").replace("á", "a").replace("é", "e").replace("ó", "o").replace("ú", "u")
     if word1 == word2:
         return True
     
