@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import asyncio
 import pandas as pd
+from datetime import datetime
 from ollama_utils import llama_params_from_dict
 from translator_utils import translate_text, show_multiple_translations
 from word_test_runner import sample_word, filter_word_list_by_description
@@ -24,6 +25,7 @@ class CreateWordRequest(BaseModel):
 class WordPair(BaseModel):
     word_language_1: str
     word_language_2: str
+    date_added: str | None = None
 
 class SaveWordListRequest(BaseModel):
     language_1: str
@@ -149,9 +151,11 @@ def save_word_list_endpoint(request: SaveWordListRequest):
         lang1_cap = request.language_1.capitalize()
         lang2_cap = request.language_2.capitalize()
         
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
         df = pd.DataFrame({
             lang1_cap: [word.word_language_1 for word in request.words],
-            lang2_cap: [word.word_language_2 for word in request.words]
+            lang2_cap: [word.word_language_2 for word in request.words],
+            'date_added': [word.date_added if word.date_added else now_str for word in request.words]
         })
         
         # Save to CSV (overwriting the old file)

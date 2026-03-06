@@ -29,3 +29,9 @@ Error: socket hang up
     at endReadableNT (node:internal/streams/readable:1701:12)
     at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
 14:46:04 [vite] hmr update /src/components/VocabularyTab.vue, /src/components/VocabularyTab.vue?vue&type=style&index=0&scoped=4aaa0e08&lang.css
+13:51:29 [vite] hmr update /src/components/WordListsTab.vue
+13:54:07 [vite] hmr update /src/components/WordListsTab.vue
+13:54:10 [vite] hmr update /src/components/WordListsTab.vue
+13:54:17 [vite] hmr update /src/components/WordListsTab.vue
+13:56:33 [vite] hmr update /src/components/WordListsTab.vue
+13:58:21 [vite] hmr update /src/components/WordListsTab.vue

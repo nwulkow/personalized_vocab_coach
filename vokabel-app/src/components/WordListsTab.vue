@@ -1,6 +1,9 @@
 <template>
   <div class="word-lists-tab">
     <h2>Vocabulary Lists</h2>
+    <div class="word-count" v-if="!loading">
+      Total words: {{ words.length }}
+    </div>
     
     <div class="language-selector">
       <div class="form-group">
@@ -37,6 +40,7 @@
             v-model="word.word1" 
             class="word-input"
             :placeholder="`${language1} word`"
+            :ref="el => setWord1Ref(el, index)"
           />
           <input 
             v-model="word.word2" 
@@ -76,7 +80,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import axios from 'axios'
 
 export default {
@@ -90,6 +94,22 @@ export default {
     const messageType = ref('success')
     const language1 = ref('German')
     const language2 = ref('English')
+    const word1Refs = ref([])
+
+    const setWord1Ref = (el, index) => {
+      if (!el) return
+      word1Refs.value[index] = el
+    }
+
+    const formatLocalDateTime = (d = new Date()) => {
+      const pad = (n) => n.toString().padStart(2, '0')
+      const year = d.getFullYear()
+      const month = pad(d.getMonth() + 1)
+      const day = pad(d.getDate())
+      const hour = pad(d.getHours())
+      const minute = pad(d.getMinutes())
+      return `${year}-${month}-${day} ${hour}:${minute}`
+    }
 
     const getLanguagesFromList = (listName) => {
       const parts = listName.split('_')
@@ -115,7 +135,8 @@ export default {
           }
         })
 
-        // Transform the data to editable format
+        // Reset refs and transform the data to editable format
+        word1Refs.value = []
         words.value = response.data.words.map(word => ({
           word1: word[langs.lang1] || '',
           word2: word[langs.lang2] || '',
@@ -131,16 +152,29 @@ export default {
       }
     }
 
-    const addNewWord = () => {
+    const addNewWord = async () => {
+      const dateAdded = formatLocalDateTime(new Date())
       words.value.push({
         word1: '',
-        word2: ''
+        word2: '',
+        date_added: dateAdded
       })
+
+      await nextTick()
+      const idx = words.value.length - 1
+      const el = word1Refs.value[idx]
+      if (el && typeof el.focus === 'function') {
+        el.focus()
+      }
     }
 
     const deleteWord = (index) => {
       if (confirm('Are you sure you want to delete this word pair?')) {
         words.value.splice(index, 1)
+        // keep refs array in sync
+        if (word1Refs.value && word1Refs.value.length > index) {
+          word1Refs.value.splice(index, 1)
+        }
       }
     }
 
@@ -162,7 +196,8 @@ export default {
           language_2: langs[1],
           words: validWords.map(word => ({
             word_language_1: word.word1.trim(),
-            word_language_2: word.word2.trim()
+            word_language_2: word.word2.trim(),
+            date_added: word.date_added || ''
           }))
         })
 
@@ -197,7 +232,8 @@ export default {
       loadWordList,
       addNewWord,
       deleteWord,
-      saveChanges
+      saveChanges,
+      setWord1Ref
     }
   }
 }
