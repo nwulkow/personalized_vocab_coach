@@ -2,6 +2,7 @@
   <div class="app">
     <header>
       <h1>🎓 Vokabeltrainer</h1>
+      <div class="llm-badge">🤖 {{ llmDisplay }}</div>
     </header>
     
     <div class="tabs">
@@ -37,7 +38,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import TranslatorTab from './components/TranslatorTab.vue'
 import VocabularyTab from './components/VocabularyTab.vue'
 import WordListsTab from './components/WordListsTab.vue'
@@ -51,9 +52,21 @@ export default {
   },
   setup() {
     const activeTab = ref('translator')
-    
+    const llmDisplay = ref('No LLM active')
+
+    onMounted(async () => {
+      try {
+        const res = await fetch('http://localhost:8000/llm_info')
+        const data = await res.json()
+        llmDisplay.value = data.display || 'No LLM active'
+      } catch {
+        llmDisplay.value = 'No LLM active'
+      }
+    })
+
     return {
-      activeTab
+      activeTab,
+      llmDisplay
     }
   }
 }
@@ -76,6 +89,18 @@ header h1 {
   margin: 0;
   font-size: 2.5rem;
   font-weight: 600;
+}
+
+.llm-badge {
+  margin-top: 0.5rem;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+  padding: 0.25rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .tabs {

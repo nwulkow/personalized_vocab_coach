@@ -27,7 +27,10 @@ def get_word_list(language_1, language_2) -> str:
             selected_word_list = word_list
             break
     if selected_word_list is None:
-            raise ValueError(f"No word list found for languages: {language_1}, {language_2}")
+            print(f"No word list found for languages: {language_1}, {language_2}. Creating a new one.")
+            # make new word list
+            selected_word_list = f"word_lists/{language_1.lower()}_{language_2.lower()}.csv"
+            pd.DataFrame(columns=[language_1.capitalize(), language_2.capitalize(), "date_added"]).to_csv(selected_word_list, index=False)
     return selected_word_list
 
 

@@ -14,9 +14,9 @@
             <img :src="`/${selectedList.split('_')[1]}.png`" :alt="selectedList.split('_')[1]" class="flag-icon" />
           </div>
           <select v-model="selectedList" @change="loadWordList" class="language-select">
-            <option value="german_english">German ↔ English</option>
-            <option value="german_spanish">German ↔ Spanish</option>
-            <option value="german_french">German ↔ French</option>
+            <option v-for="list in availableLists" :key="list.key" :value="list.key">
+              {{ list.label }}
+            </option>
           </select>
         </div>
       </div>
@@ -80,13 +80,14 @@
 </template>
 
 <script>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
   name: 'WordListsTab',
   setup() {
-    const selectedList = ref('german_english')
+    const availableLists = ref([])
+    const selectedList = ref('')
     const words = ref([])
     const loading = ref(false)
     const saving = ref(false)
@@ -119,7 +120,21 @@ export default {
       }
     }
 
+    const fetchAvailableLists = async () => {
+      try {
+        const response = await axios.get('/api/word_lists')
+        availableLists.value = response.data.word_lists || []
+        if (availableLists.value.length > 0 && !selectedList.value) {
+          selectedList.value = availableLists.value[0].key
+        }
+        await loadWordList()
+      } catch (error) {
+        console.error('Error fetching available word lists:', error)
+      }
+    }
+
     const loadWordList = async () => {
+      if (!selectedList.value) return
       loading.value = true
       message.value = ''
 
@@ -217,10 +232,11 @@ export default {
       }
     }
 
-    // Load default list on mount
-    loadWordList()
+    // Load available lists on mount
+    onMounted(fetchAvailableLists)
 
     return {
+      availableLists,
       selectedList,
       words,
       loading,

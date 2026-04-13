@@ -46,11 +46,32 @@ app.add_middleware(
 llama_params_dict = {
     "use_cpp": True, "model_path": "/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf"
 }
+llama_params_dict = {
+    "use_cpp": False,
+    "model_id": "llama3:8b",
+    "url": "http://127.0.0.1:11434/v1/models"
+}
 llama_params = llama_params_from_dict(llama_params_dict)
 
 @app.get("/")
 def root():
     return {"status": "running"}
+
+@app.get("/llm_info")
+def llm_info():
+    """Return information about the currently configured LLM."""
+    import os
+    if llama_params is None:
+        return {"llm_name": None, "display": "No LLM active"}
+    use_cpp = getattr(llama_params, 'use_cpp', False)
+    if use_cpp:
+        model_path = getattr(llama_params, 'model_path', None)
+        model_name = os.path.basename(model_path) if model_path else None
+    else:
+        model_name = getattr(llama_params, 'model_id', None)
+    if model_name:
+        return {"llm_name": model_name, "display": model_name}
+    return {"llm_name": None, "display": "No LLM active"}
 
 @app.post("/translate")
 def translate(text: str, src_language: str, dest_language: str, speak_translated: bool):
@@ -80,7 +101,7 @@ def create_word(request: CreateWordRequest):
     # If caller provided original indices (mapping to the full word list), set them as the DataFrame index
     if request.original_indices is not None and len(request.original_indices) == len(words):
         words.index = request.original_indices
-
+    print(llama_params.model_id, llama_params.use_cpp, llama_params.url)
     word_language_1, word_language_2, word_index, original_word_language_1 = sample_word(
         words,
         request.language_1,
@@ -119,6 +140,26 @@ def add_word_pair(
     """Add a word pair to the word list."""
     add_word_pair_to_word_list(word_language_1, word_language_2, language_1, language_2)
     return {"status": "success", "message": "Word pair added to list"}
+
+
+@app.get("/word_lists")
+def get_available_word_lists():
+    """Return all available word list language pairs derived from CSV filenames."""
+    import os
+    word_lists_dir = "word_lists"
+    pairs = []
+    for filename in sorted(os.listdir(word_lists_dir)):
+        if filename.endswith(".csv"):
+            name = filename[:-4]  # strip .csv
+            parts = name.split("_")
+            if len(parts) == 2:
+                pairs.append({
+                    "key": name,
+                    "language_1": parts[0],
+                    "language_2": parts[1],
+                    "label": f"{parts[0].capitalize()} \u2194 {parts[1].capitalize()}"
+                })
+    return {"word_lists": pairs}
 
 
 @app.get("/word_list")

@@ -4,9 +4,9 @@ from word_test_runner import run_test
 from llama_cpp import Llama
 
 
-llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf", n_gpu_layers=-1)
-params = Llama_params(use_cpp=True, llama_llm=llm)
-
+#llm = Llama(model_path="/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf", n_gpu_layers=-1)
+#params = Llama_params(use_cpp=True, llama_llm=llm)
+params = Llama_params(model_id="llama3:8b", use_cpp=False, url="http://127.0.0.1:11434/v1/models")
 run_test(
     language_1="french",
     language_2="german",
