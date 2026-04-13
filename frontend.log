@@ -3,9 +3,7 @@
 > vite
 
 
-  VITE v5.4.21  ready in 170 ms
+  VITE v5.4.21  ready in 115 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-17:51:39 [vite] hmr update /src/components/WordListsTab.vue
-17:52:00 [vite] hmr update /src/components/WordListsTab.vue

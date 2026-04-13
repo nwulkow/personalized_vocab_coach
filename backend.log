@@ -1,45 +1,34 @@
 INFO:     Will watch for changes in these directories: ['/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [13890] using StatReload
-INFO:     Started server process [13893]
+INFO:     Started reloader process [15584] using StatReload
+INFO:     Started server process [15587]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:51644 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51655 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51663 - "POST /translate?text=horse&src_language=english&dest_language=spanish&speak_translated=false HTTP/1.1" 200 OK
-No word list found for languages: english, spanish. Creating a new one.
-INFO:     127.0.0.1:51668 - "POST /add_word_pair?word_language_1=horse&word_language_2=caballo&language_1=english&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51673 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51682 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51684 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51691 - "GET /word_list?language_1=spanish&language_2=english HTTP/1.1" 200 OK
-llama3:8b False http://127.0.0.1:11434/v1/models
-INFO:     127.0.0.1:51694 - "POST /create_word HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51698 - "POST /check_translation?user_translation=l&correct_translation=horse&be_stringent=false&word_to_pay_attention_to=caballo HTTP/1.1" 200 OK
-llama3:8b False http://127.0.0.1:11434/v1/models
+INFO:     127.0.0.1:52317 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52326 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52329 - "POST /translate?text=Pferd&src_language=german&dest_language=spanish&speak_translated=false HTTP/1.1" 200 OK
 Ollama server ready!
-INFO:     127.0.0.1:51701 - "POST /create_word HTTP/1.1" 200 OK
-WARNING:  StatReload detected changes in 'api/main.py'. Reloading...
+INFO:     127.0.0.1:52335 - "POST /show_alternatives?word=Pferd&src_language=german&dest_language=spanish&google_translation=Caballo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52357 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52359 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52365 - "POST /check_translation?user_translation=l&correct_translation=The+cultural+proclivity+for+self-reflection+can+shape+their+identity.&be_stringent=false&word_to_pay_attention_to=Neigung HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52368 - "POST /create_word HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52375 - "POST /check_translation?user_translation=The+fine+analysis+of+the+events+should+expunge+the+causes&correct_translation=The+fine+analysis+of+the+event+should+eliminate+the+causes.&be_stringent=false&word_to_pay_attention_to=ausl%C3%B6schen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52380 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52384 - "POST /check_translation?user_translation=to+perpetrate&correct_translation=to+perpetrate&be_stringent=false&word_to_pay_attention_to=ver%C3%BCben HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52387 - "POST /create_word HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52390 - "POST /check_translation?user_translation=knittered&correct_translation=crumpled&be_stringent=false&word_to_pay_attention_to=zerknittert HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52395 - "POST /create_word HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:52401 - "POST /check_translation?user_translation=I+don%23&correct_translation=The+philosophical+debate+was+consciously+influenced+by+the+consequences.&be_stringent=false&word_to_pay_attention_to=bewusst HTTP/1.1" 200 OK
 INFO:     Shutting down
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [13893]
-INFO:     Started server process [14263]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-WARNING:  StatReload detected changes in 'api/main.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [14263]
-INFO:     Started server process [14306]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     127.0.0.1:51757 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51759 - "GET /word_lists HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51761 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [14306]
-INFO:     Stopping reloader process [13890]
+INFO:     Finished server process [15587]
+INFO:     Stopping reloader process [15584]

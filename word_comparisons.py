@@ -1,5 +1,4 @@
-import ollama
-from ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.ollama_utils import Llama_params, respond_to_prompt
 
 
 def check_equality(word1:str, word2:str, llama_params: Llama_params | None = None, be_stringent: bool = False, word_to_pay_attention_to: str | None = None) -> bool:

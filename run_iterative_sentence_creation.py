@@ -1,4 +1,4 @@
-from ollama_utils import Llama_params
+from llm_utils.ollama_utils import Llama_params
 from llama_cpp import Llama
 from create_text_and_voice import create_next_word_candidates
 

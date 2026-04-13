@@ -1,4 +1,4 @@
-from ollama_utils import Llama_params
+from llm_utils.ollama_utils import Llama_params
 import datetime
 from word_test_runner import run_test
 from llama_cpp import Llama

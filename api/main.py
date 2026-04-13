@@ -51,7 +51,8 @@ llama_params_dict = {
     "model_id": "llama3:8b",
     "url": "http://127.0.0.1:11434/v1/models"
 }
-llama_params = llama_params_from_dict(llama_params_dict)
+# llama_params_dict = None
+llama_params = llama_params_from_dict(llama_params_dict) if llama_params_dict is not None else None
 
 @app.get("/")
 def root():
@@ -83,6 +84,8 @@ def translate(text: str, src_language: str, dest_language: str, speak_translated
 @app.post("/show_alternatives")
 def show_alternatives(word: str, src_language: str, dest_language: str, google_translation: str = None):
     """Get multiple alternative translations for a word using the LLM."""
+    if llama_params is None:
+        return {"alternatives": [], "error": "No LLM configured"}
     alternatives = show_multiple_translations(
         word, src_language, dest_language, llama_params,
         google_translation=google_translation
@@ -101,7 +104,6 @@ def create_word(request: CreateWordRequest):
     # If caller provided original indices (mapping to the full word list), set them as the DataFrame index
     if request.original_indices is not None and len(request.original_indices) == len(words):
         words.index = request.original_indices
-    print(llama_params.model_id, llama_params.use_cpp, llama_params.url)
     word_language_1, word_language_2, word_index, original_word_language_1 = sample_word(
         words,
         request.language_1,
@@ -229,6 +231,8 @@ def filter_words(language: str, description: str, language_pair: str = None):
         description: The description to filter by (e.g., 'verbs only')
         language_pair: Optional language pair in format 'german_english' to use specific word list
     """
+    if llama_params is None:
+        return {"filtered_words": [], "error": "No LLM configured"}
     try:
         # If language_pair is provided, use that specific word list
         if language_pair:

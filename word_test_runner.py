@@ -5,8 +5,8 @@ from file_utils import get_word_list
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
 import datetime
-from ollama_utils import Llama_params, respond_to_prompt
-from ollama_start import start_ollama
+from llm_utils.ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.start_ollama import start_ollama
 
 def run_test(
         language_1: str,

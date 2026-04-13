@@ -1,7 +1,6 @@
 import asyncio
-import ollama
 import pyttsx3
-from ollama_utils import respond_to_prompt, Llama_params
+from llm_utils.ollama_utils import respond_to_prompt, Llama_params
 from translator_utils import translate_text
 
 def create_sentence_from_word(

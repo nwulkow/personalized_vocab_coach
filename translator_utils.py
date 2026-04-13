@@ -1,5 +1,5 @@
 from googletrans import Translator
-from ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.ollama_utils import Llama_params, respond_to_prompt
 
 from file_utils import add_word_pair_to_word_list
 
