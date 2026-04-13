@@ -43,9 +43,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-llama_params_dict = {
-    "use_cpp": True, "model_path": "/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf"
-}
+#llama_params_dict = {
+#    "use_cpp": True, "model_path": "/Users/niklaswulkow/ResearchEngineering/LLama/gemma-3-27B-it-QAT-Q4_0.gguf"
+#}
 llama_params_dict = {
     "use_cpp": False,
     "model_id": "llama3:8b",
