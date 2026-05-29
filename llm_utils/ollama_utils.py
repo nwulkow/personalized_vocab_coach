@@ -103,7 +103,8 @@ def respond_to_prompt(
         start_ollama(url=llama_params.url, cpu_only=llama_params.cpu_only)
         response = ollama.chat(
             model=llama_params.model_id,
-            messages=[{"role": "user", "content": prompt}],#
+            messages=[{"role": "user", "content": prompt}],
+            keep_alive=-1,  # keep model loaded indefinitely
             options={
                 "temperature": temperature,
                 "max_tokens": max_tokens

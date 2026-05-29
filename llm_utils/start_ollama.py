@@ -1,16 +1,26 @@
-import ollama
+import requests
+
+def _is_server_running(url: str) -> bool:
+    try:
+        return requests.get(url, timeout=1).status_code == 200
+    except Exception:
+        return False
 
 def start_ollama(url: str = "http://127.0.0.1:11434/v1/models", cpu_only: bool = False):
 
     import subprocess
     import time
-    import requests
     import atexit
     import os
+
+    # Skip startup if the server is already running
+    if _is_server_running(url):
+        return
 
     # --- 1. Start Ollama server ---
     server_cmd = ["ollama", "serve"]
     env = os.environ.copy()
+    env["OLLAMA_KEEP_ALIVE"] = "-1"  # keep models loaded indefinitely
     if cpu_only:
         env["OLLAMA_NUM_GPU"] = "0"
         env["OLLAMA_LLM_LIBRARY"] = "cpu"

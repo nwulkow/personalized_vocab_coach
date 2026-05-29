@@ -1,34 +1,20 @@
 INFO:     Will watch for changes in these directories: ['/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [15584] using StatReload
-INFO:     Started server process [15587]
+INFO:     Started reloader process [401] using StatReload
+INFO:     Started server process [404]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:52317 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52326 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52329 - "POST /translate?text=Pferd&src_language=german&dest_language=spanish&speak_translated=false HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52335 - "POST /show_alternatives?word=Pferd&src_language=german&dest_language=spanish&google_translation=Caballo HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52357 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52359 - "POST /create_word HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52365 - "POST /check_translation?user_translation=l&correct_translation=The+cultural+proclivity+for+self-reflection+can+shape+their+identity.&be_stringent=false&word_to_pay_attention_to=Neigung HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52368 - "POST /create_word HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52375 - "POST /check_translation?user_translation=The+fine+analysis+of+the+events+should+expunge+the+causes&correct_translation=The+fine+analysis+of+the+event+should+eliminate+the+causes.&be_stringent=false&word_to_pay_attention_to=ausl%C3%B6schen HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52380 - "POST /create_word HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52384 - "POST /check_translation?user_translation=to+perpetrate&correct_translation=to+perpetrate&be_stringent=false&word_to_pay_attention_to=ver%C3%BCben HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52387 - "POST /create_word HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52390 - "POST /check_translation?user_translation=knittered&correct_translation=crumpled&be_stringent=false&word_to_pay_attention_to=zerknittert HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52395 - "POST /create_word HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:52401 - "POST /check_translation?user_translation=I+don%23&correct_translation=The+philosophical+debate+was+consciously+influenced+by+the+consequences.&be_stringent=false&word_to_pay_attention_to=bewusst HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60300 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60310 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60314 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60317 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60365 - "POST /check_translation?user_translation=Laves+la+herida+con+las+toallas+humidas+antes+de+bandajar&correct_translation=%C2%A1Limpie+la+herida+con+toallitas+h%C3%BAmedas+antes+de+vestirse!&be_stringent=false&word_to_pay_attention_to=Feuchtt%C3%BCcher HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60621 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60624 - "POST /check_translation?user_translation=miel&correct_translation=miel&be_stringent=false&word_to_pay_attention_to=Honig HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60627 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60630 - "POST /check_translation?user_translation=hornear&correct_translation=hornear&be_stringent=false&word_to_pay_attention_to=backen HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'api/main.py'. Reloading...
 INFO:     Shutting down
-INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [15587]
-INFO:     Stopping reloader process [15584]
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO:     Finished server process [404]
+INFO:     Stopping reloader process [401]

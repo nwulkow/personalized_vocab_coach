@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import asyncio
 import pandas as pd
 from datetime import datetime
-from ollama_utils import llama_params_from_dict
+from llm_utils.ollama_utils import llama_params_from_dict
 from translator_utils import translate_text, show_multiple_translations
 from word_test_runner import sample_word, filter_word_list_by_description
 from file_utils import add_word_pair_to_word_list, get_word_list
