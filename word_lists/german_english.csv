@@ -1,23 +1,23 @@
-German,English,date_added
-beweisen,to evince,2026-02-27 12:34
-Neigung,proclivity,2026-02-27 12:34
-umsichtig,prudent,2026-02-27 12:34
-unappetitlich,unsavory,2026-02-27 12:34
-austeilen,to mete out,2026-02-27 12:34
-verlassen,deserted,2026-02-27 12:34
-närrische Aufgabe,fool's errand,2026-02-27 12:34
-besänftigen,to mollify,2026-02-27 12:34
-auslöschen,to expunge,2026-02-27 12:34
-zulässig,admissable,2026-02-27 12:34
-grillen,to grill,2026-02-27 12:34
-zerknittert,crumpled,2026-02-27 12:34
-verärgert,exasperated,2026-02-27 12:34
-täuschen,to dupe,2026-02-27 12:34
-verschlimmern,to aggrevate,2026-02-27 12:34
-Überweisung,remittance,2026-02-27 12:34
-verüben,to perpetrate,2026-02-27 12:34
-bewusst,cognizant,2026-03-04 09:20
-feierlich,solemn,2026-03-15 10:33
-schweigsam,taciturn,2026-03-16 14:32
-Befürchtung,apprehension,2026-03-18 16:30
-Aufregung,commotion,2026-03-18 16:30
+German,English,date_added,tags
+beweisen,to evince,2026-02-27 12:34,Verb
+Neigung,proclivity,2026-02-27 12:34,
+umsichtig,prudent,2026-02-27 12:34,Adjektiv
+unappetitlich,unsavory,2026-02-27 12:34,Adjektiv
+austeilen,to mete out,2026-02-27 12:34,Verb
+verlassen,deserted,2026-02-27 12:34,Adjektiv
+närrische Aufgabe,fool's errand,2026-02-27 12:34,Ausdruck
+besänftigen,to mollify,2026-02-27 12:34,Verb
+auslöschen,to expunge,2026-02-27 12:34,Verb
+zulässig,admissable,2026-02-27 12:34,Adjektiv
+grillen,to grill,2026-02-27 12:34,Verb
+zerknittert,crumpled,2026-02-27 12:34,Adjektiv
+verärgert,exasperated,2026-02-27 12:34,Adjektiv;Emotion
+täuschen,to dupe,2026-02-27 12:34,Verb
+verschlimmern,to aggrevate,2026-02-27 12:34,Verb
+Überweisung,remittance,2026-02-27 12:34,
+verüben,to perpetrate,2026-02-27 12:34,Verb
+bewusst,cognizant,2026-03-04 09:20,Adjektiv;Emotion
+feierlich,solemn,2026-03-15 10:33,Adjektiv
+schweigsam,taciturn,2026-03-16 14:32,Adjektiv
+Befürchtung,apprehension,2026-03-18 16:30,
+Aufregung,commotion,2026-03-18 16:30,

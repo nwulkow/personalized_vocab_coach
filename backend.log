@@ -170,3 +170,73 @@ INFO:     Finished server process [8987]
 INFO:     Started server process [9023]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'word_test_runner.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9023]
+INFO:     Started server process [9312]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'word_test_runner.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9312]
+INFO:     Started server process [9313]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54016 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54014 - "GET /tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54017 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54020 - "GET /tags?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54024 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54028 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54030 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "POST /check_translation?user_translation=correr&correct_translation=correr&be_stringent=false&word_to_pay_attention_to=laufen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54034 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54036 - "POST /check_translation?user_translation=aterrizar&correct_translation=aterrizar&be_stringent=false&word_to_pay_attention_to=landen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54038 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54041 - "POST /check_translation?user_translation=apoyarse&correct_translation=apoyarse&be_stringent=false&word_to_pay_attention_to=sich+abst%C3%BCtzen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54045 - "POST /check_translation?user_translation=bucear&correct_translation=bucear&be_stringent=false&word_to_pay_attention_to=Tauchen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54047 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54049 - "POST /check_translation?user_translation=vacilar&correct_translation=vacilar&be_stringent=false&word_to_pay_attention_to=schwanken HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54051 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "POST /check_translation?user_translation=mudarse&correct_translation=mudarse&be_stringent=false&word_to_pay_attention_to=umziehen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54056 - "GET /word_lists HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54058 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54060 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54063 - "GET /tags?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54066 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54068 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54070 - "POST /check_translation?user_translation=indigno&correct_translation=indigno&be_stringent=false&word_to_pay_attention_to=wertlos HTTP/1.1" 200 OK
+Ollama server ready!
+INFO:     127.0.0.1:54072 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54096 - "GET /word_lists HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54097 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54100 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "POST /save_word_list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54105 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54108 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54110 - "GET /tags?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54113 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54115 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54117 - "POST /check_translation?user_translation=inasumible&correct_translation=inasumible&be_stringent=false&word_to_pay_attention_to=unerschwinglich HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54119 - "POST /create_word HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54127 - "GET /word_lists HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54129 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54131 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54147 - "POST /save_word_list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54149 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54151 - "GET /word_list?language_1=german&language_2=french HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54154 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54161 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54175 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54173 - "GET /tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9313]
+INFO:     Stopping reloader process [6948]

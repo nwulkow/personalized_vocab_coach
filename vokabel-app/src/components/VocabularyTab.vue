@@ -92,10 +92,38 @@
           <div class="tag-filter-header">
             <label>Filter by Tags:</label>
             <div class="tag-filter-controls">
-              <select v-model="tagFilterMode" class="tag-mode-select">
-                <option value="include">Include selected</option>
-                <option value="exclude">Exclude selected</option>
-              </select>
+              <div class="tag-control-pair">
+                <span class="tag-control-label">Mode</span>
+                <div class="tag-mode-buttons">
+                  <button
+                    @click="tagFilterMode = 'include'"
+                    :class="['tag-mode-btn', { active: tagFilterMode === 'include' }]"
+                    type="button"
+                  >Include</button>
+                  <button
+                    @click="tagFilterMode = 'exclude'"
+                    :class="['tag-mode-btn', { active: tagFilterMode === 'exclude' }]"
+                    type="button"
+                  >Exclude</button>
+                </div>
+              </div>
+              <div class="tag-control-pair">
+                <span class="tag-control-label">Match</span>
+                <div class="tag-mode-buttons">
+                  <button
+                    @click="tagMatchMode = 'any'"
+                    :class="['tag-mode-btn', { active: tagMatchMode === 'any' }]"
+                    type="button"
+                    title="Words that have at least one of the selected tags"
+                  >Any tag</button>
+                  <button
+                    @click="tagMatchMode = 'all'"
+                    :class="['tag-mode-btn', { active: tagMatchMode === 'all' }]"
+                    type="button"
+                    title="Words that have all of the selected tags"
+                  >All tags</button>
+                </div>
+              </div>
               <button @click="ignoreAllTags" class="ignore-tags-btn" type="button" title="Clear tag selection">🏷️ Ignore tags</button>
             </div>
           </div>
@@ -110,7 +138,10 @@
           </div>
           <div v-else class="no-tags-hint">No tags in this word list</div>
           <div v-if="selectedTestTags.length > 0" class="tag-filter-summary">
-            {{ tagFilterMode === 'include' ? 'Only words with:' : 'Excluding words with:' }}
+            <span v-if="tagFilterMode === 'include' && tagMatchMode === 'any'">Words with <strong>any of:</strong></span>
+            <span v-else-if="tagFilterMode === 'include' && tagMatchMode === 'all'">Words with <strong>all of:</strong></span>
+            <span v-else-if="tagFilterMode === 'exclude' && tagMatchMode === 'any'">Excluding words with <strong>any of:</strong></span>
+            <span v-else>Excluding words that have <strong>all of:</strong></span>
             <strong>{{ selectedTestTags.join(', ') }}</strong>
           </div>
         </div>
@@ -234,7 +265,7 @@ export default {
     const languageLevelForCreatedSentence = ref('C1')
     const descriptionForWordFiltering = ref('')
     const remark = ref('')
-    const hideCorrectlyTranslatedWords = ref(false)
+    const hideCorrectlyTranslatedWords = ref(true)
     const beStringent = ref(false)
     const startDate = ref('')
     const endDate = ref('')
@@ -243,6 +274,7 @@ export default {
     const availableTagsForTest = ref([])
     const selectedTestTags = ref([])
     const tagFilterMode = ref('include') // 'include' | 'exclude'
+    const tagMatchMode = ref('any')       // 'any' | 'all'
 
     const fetchTagsForTest = async () => {
       try {
@@ -352,16 +384,20 @@ export default {
         
         // Apply tag filter if tags are selected
         if (selectedTestTags.value.length > 0) {
-          const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
+          const isIntersection = tagMatchMode.value === 'all'
+          const isExclude = tagFilterMode.value === 'exclude'
           words = words.filter(word => {
             const rawTags = word.tags
             const wordTags = (rawTags && typeof rawTags === 'string')
-              ? rawTags.split(';').map(t => t.trim()).filter(Boolean)
+              ? rawTags.split(';').map(t => t.trim().toLowerCase()).filter(Boolean)
               : []
-            const hasMatch = selectedTestTags.value.some(t => wordTags.includes(t))
-            return tagFilterMode.value === 'include' ? hasMatch : !hasMatch
+            const selected = selectedTestTags.value.map(t => t.trim().toLowerCase())
+            const matchAll = selected.every(t => wordTags.includes(t))
+            const matchAny = selected.some(t => wordTags.includes(t))
+            const matched = isIntersection ? matchAll : matchAny
+            return isExclude ? !matched : matched
           })
-          console.log(`Tag filter (${tagFilterMode.value}): ${words.length} words after filtering by [${selectedTestTags.value.join(', ')}]`)
+          console.log(`Tag filter (${tagFilterMode.value} / ${tagMatchMode.value}): ${words.length} words after filtering by [${selectedTestTags.value.join(', ')}]`)
           if (words.length === 0) {
             alert(`No words match the tag filter. Try different tags or click "Ignore tags".`)
             testStarted.value = false
@@ -663,6 +699,7 @@ export default {
       availableTagsForTest,
       selectedTestTags,
       tagFilterMode,
+      tagMatchMode,
       toggleTestTag,
       ignoreAllTags,
       loading,
@@ -1041,16 +1078,57 @@ export default {
   gap: 0.5rem;
 }
 
-.tag-mode-select {
-  padding: 0.35rem 0.6rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 0.88rem;
-  background: white;
-  cursor: pointer;
+.tag-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.tag-mode-select:focus { outline: none; border-color: #667eea; }
+.tag-control-pair {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tag-control-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #667eea;
+  white-space: nowrap;
+}
+
+.tag-mode-buttons {
+  display: flex;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tag-mode-btn {
+  padding: 0.3rem 0.7rem;
+  background: white;
+  color: #667eea;
+  border: none;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.4;
+}
+
+.tag-mode-btn + .tag-mode-btn {
+  border-left: 2px solid #667eea;
+}
+
+.tag-mode-btn.active {
+  background: #667eea;
+  color: white;
+}
+
+.tag-mode-btn:hover:not(.active) {
+  background: #f0f4ff;
+}
 
 .ignore-tags-btn {
   padding: 0.35rem 0.75rem;
