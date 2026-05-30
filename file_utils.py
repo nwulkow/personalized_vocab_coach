@@ -70,6 +70,50 @@ def add_date_to_word_list(word_list_path: str) -> None:
     words.loc[words["date_added"].isna() | (words["date_added"] == ""), "date_added"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     words.to_csv(word_list_path, index=False)
 
+def add_tag_to_word_pair(word_1: str, word_2: str, language_1: str, language_2: str, tag: str) -> None:
+    """
+    Add a tag to a word pair in the word list file.
+
+    Parameters:
+    - word_1: The word in the first language.
+    - word_2: The word in the second language.
+    - language_1: The first language (e.g., "german").
+    - language_2: The second language (e.g., "english").
+    - tag: The tag to add to the word pair.
+    """
+
+    word_list_path = get_word_list(language_1, language_2)
+    words: pd.DataFrame = pd.read_csv(word_list_path)
+    if "tags" not in words.columns:
+        words["tags"] = ""
+    mask = (words[language_1.capitalize()] == word_1.strip()) & (words[language_2.capitalize()] == word_2.strip())
+    if mask.any():
+        raw = words.loc[mask, "tags"].iloc[0]
+        # raw may be NaN (float) if the cell is empty
+        if pd.isna(raw) or not str(raw).strip():
+            existing_tag_list = []
+        else:
+            existing_tag_list = [t.strip() for t in str(raw).split(";") if t.strip()]
+        # Only add if not already present
+        if tag.strip() and tag.strip() not in existing_tag_list:
+            existing_tag_list.append(tag.strip())
+        words.loc[mask, "tags"] = ";".join(existing_tag_list)
+        words.to_csv(word_list_path, index=False)
+
+def add_tag_list_to_word_pair(word_1: str, word_2: str, language_1: str, language_2: str, tag_list: list[str]) -> None:
+    """
+    Add a list of tags to a word pair in the word list file.
+
+    Parameters:
+    - word_1: The word in the first language.
+    - word_2: The word in the second language.
+    - language_1: The first language (e.g., "german").
+    - language_2: The second language (e.g., "english").
+    - tag_list: The list of tags to add to the word pair.
+    """
+
+    for tag in tag_list:
+        add_tag_to_word_pair(word_1, word_2, language_1, language_2, tag)
 
 if __name__ == "__main__":
     add_date_to_word_list("word_lists/german_french.csv")

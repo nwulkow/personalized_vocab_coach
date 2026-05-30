@@ -88,6 +88,33 @@
           </div>
         </div>
 
+        <div class="form-group tag-filter-group">
+          <div class="tag-filter-header">
+            <label>Filter by Tags:</label>
+            <div class="tag-filter-controls">
+              <select v-model="tagFilterMode" class="tag-mode-select">
+                <option value="include">Include selected</option>
+                <option value="exclude">Exclude selected</option>
+              </select>
+              <button @click="ignoreAllTags" class="ignore-tags-btn" type="button" title="Clear tag selection">🏷️ Ignore tags</button>
+            </div>
+          </div>
+          <div v-if="availableTagsForTest.length > 0" class="test-tag-chips">
+            <button
+              v-for="tag in availableTagsForTest"
+              :key="tag"
+              @click="toggleTestTag(tag)"
+              :class="['test-tag-chip', { selected: selectedTestTags.includes(tag) }]"
+              type="button"
+            >{{ tag }}</button>
+          </div>
+          <div v-else class="no-tags-hint">No tags in this word list</div>
+          <div v-if="selectedTestTags.length > 0" class="tag-filter-summary">
+            {{ tagFilterMode === 'include' ? 'Only words with:' : 'Excluding words with:' }}
+            <strong>{{ selectedTestTags.join(', ') }}</strong>
+          </div>
+        </div>
+
         <div class="form-group">
           <label>
             <input type="checkbox" v-model="useVoice" />
@@ -184,7 +211,7 @@
 </template>
 
 <script>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 import axios from 'axios'
 
 export default {
@@ -211,6 +238,38 @@ export default {
     const beStringent = ref(false)
     const startDate = ref('')
     const endDate = ref('')
+
+    // Tag filtering
+    const availableTagsForTest = ref([])
+    const selectedTestTags = ref([])
+    const tagFilterMode = ref('include') // 'include' | 'exclude'
+
+    const fetchTagsForTest = async () => {
+      try {
+        const response = await axios.get('/api/tags', {
+          params: { language_1: startLanguage.value, language_2: targetLanguage.value }
+        })
+        availableTagsForTest.value = response.data.tags
+        // Clear selected tags that no longer exist
+        selectedTestTags.value = selectedTestTags.value.filter(t => availableTagsForTest.value.includes(t))
+      } catch (err) {
+        console.error('Error fetching tags for test:', err)
+        availableTagsForTest.value = []
+      }
+    }
+    fetchTagsForTest()
+
+    watch([startLanguage, targetLanguage], fetchTagsForTest)
+
+    const toggleTestTag = (tag) => {
+      const idx = selectedTestTags.value.indexOf(tag)
+      if (idx === -1) selectedTestTags.value.push(tag)
+      else selectedTestTags.value.splice(idx, 1)
+    }
+
+    const ignoreAllTags = () => {
+      selectedTestTags.value = []
+    }
     
     const currentWord = ref(null)
     const userAnswer = ref('')
@@ -291,6 +350,26 @@ export default {
         // Add original indices to each word before any filtering
         words = words.map((word, index) => ({ ...word, _originalIndex: index }))
         
+        // Apply tag filter if tags are selected
+        if (selectedTestTags.value.length > 0) {
+          const lang1Key = startLanguage.value.charAt(0).toUpperCase() + startLanguage.value.slice(1)
+          words = words.filter(word => {
+            const rawTags = word.tags
+            const wordTags = (rawTags && typeof rawTags === 'string')
+              ? rawTags.split(';').map(t => t.trim()).filter(Boolean)
+              : []
+            const hasMatch = selectedTestTags.value.some(t => wordTags.includes(t))
+            return tagFilterMode.value === 'include' ? hasMatch : !hasMatch
+          })
+          console.log(`Tag filter (${tagFilterMode.value}): ${words.length} words after filtering by [${selectedTestTags.value.join(', ')}]`)
+          if (words.length === 0) {
+            alert(`No words match the tag filter. Try different tags or click "Ignore tags".`)
+            testStarted.value = false
+            loading.value = false
+            return
+          }
+        }
+
         // Apply filtering if description is provided
         if (descriptionForWordFiltering.value && descriptionForWordFiltering.value.trim() !== '') {
           console.log('Applying word filtering...')
@@ -581,6 +660,11 @@ export default {
       beStringent,
       startDate,
       endDate,
+      availableTagsForTest,
+      selectedTestTags,
+      tagFilterMode,
+      toggleTestTag,
+      ignoreAllTags,
       loading,
       loadingMessage,
       currentWord,
@@ -934,6 +1018,94 @@ export default {
   font-size: 1.2rem;
   color: #6c757d;
   margin-bottom: 1.5rem;
+}
+
+.tag-filter-group {
+  grid-column: 1 / -1;
+}
+
+.tag-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.tag-filter-header label {
+  margin-bottom: 0;
+}
+
+.tag-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag-mode-select {
+  padding: 0.35rem 0.6rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  background: white;
+  cursor: pointer;
+}
+
+.tag-mode-select:focus { outline: none; border-color: #667eea; }
+
+.ignore-tags-btn {
+  padding: 0.35rem 0.75rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ignore-tags-btn:hover { background: #5a6268; }
+
+.test-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.test-tag-chip {
+  padding: 0.3rem 0.8rem;
+  border: 2px solid #667eea;
+  border-radius: 20px;
+  background: white;
+  color: #667eea;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.test-tag-chip.selected {
+  background: #667eea;
+  color: white;
+}
+
+.test-tag-chip:hover:not(.selected) { background: #f0f4ff; }
+
+.no-tags-hint {
+  color: #aaa;
+  font-size: 0.88rem;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.tag-filter-summary {
+  font-size: 0.88rem;
+  color: #555;
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: #f0f4ff;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
 }
 
 @media (max-width: 768px) {

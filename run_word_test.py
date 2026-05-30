@@ -8,7 +8,7 @@ from llama_cpp import Llama
 #params = Llama_params(use_cpp=True, llama_llm=llm)
 params = Llama_params(model_id="llama3:8b", use_cpp=False, url="http://127.0.0.1:11434/v1/models")
 run_test(
-    language_1="french",
+    language_1="spanish",
     language_2="german",
     no_words=None,
     llama_params=params,
@@ -17,6 +17,9 @@ run_test(
     use_voice=True,
     hide_correctly_translated_words=True,
     description_for_word_filtering="Verbs only",
+    tags_for_word_filtering=["Verb", "Bewegung"],
+    #exclude_words_with_tag=True,
+    intersection_of_tags=True,
     max_num_words_in_created_sentence=8,
     language_level_for_created_sentence="C2",
     be_stringent=True,

@@ -76,6 +76,35 @@
       </div>
     </div>
 
+    <div class="tag-section">
+      <div class="tag-section-title">Tags for next addition</div>
+      <div class="available-tags" v-if="availableTags.length > 0">
+        <button
+          v-for="tag in availableTags"
+          :key="tag"
+          @click="toggleTag(tag)"
+          :class="['tag-chip', { selected: selectedTags.includes(tag) }]"
+          type="button"
+        >{{ tag }}</button>
+      </div>
+      <div class="new-tag-row">
+        <input
+          v-model="newTagInput"
+          @keydown.enter.prevent="addNewTag"
+          placeholder="New tag..."
+          class="new-tag-input"
+          type="text"
+        />
+        <button @click="addNewTag" class="add-tag-button" type="button" :disabled="!newTagInput.trim()">+ Add tag</button>
+      </div>
+      <div v-if="selectedTags.length > 0" class="selected-tags-preview">
+        <span class="selected-label">Selected:</span>
+        <span v-for="tag in selectedTags" :key="tag" class="selected-tag-chip">
+          {{ tag }} <button @click="removeSelectedTag(tag)" class="remove-tag-btn" type="button">✕</button>
+        </span>
+      </div>
+    </div>
+
     <div class="actions">
       <div v-if="successMessage" class="success-message">
         {{ successMessage }}
@@ -100,6 +129,19 @@ export default {
 
     const lastEditedField = ref({ index: 0, field: 'source' })
     const successMessage = ref('')
+    const availableTags = ref([])
+    const selectedTags = ref([])
+    const newTagInput = ref('')
+
+    const fetchTags = async () => {
+      try {
+        const response = await axios.get('/api/tags')
+        availableTags.value = response.data.tags
+      } catch (err) {
+        console.error('Error fetching tags:', err)
+      }
+    }
+    fetchTags()
 
     const selectText = (event) => {
       // Use setTimeout to ensure selection happens after the click event completes
@@ -183,6 +225,29 @@ export default {
       translationItems.value[index].alternatives = []
     }
 
+    const toggleTag = (tag) => {
+      const idx = selectedTags.value.indexOf(tag)
+      if (idx === -1) selectedTags.value.push(tag)
+      else selectedTags.value.splice(idx, 1)
+    }
+
+    const addNewTag = () => {
+      const raw = newTagInput.value.trim()
+      if (!raw) return
+      // Support comma-separated multiple tags
+      const newTags = raw.split(',').map(t => t.trim()).filter(Boolean)
+      for (const tag of newTags) {
+        if (!selectedTags.value.includes(tag)) selectedTags.value.push(tag)
+        if (!availableTags.value.includes(tag)) availableTags.value.push(tag)
+      }
+      newTagInput.value = ''
+    }
+
+    const removeSelectedTag = (tag) => {
+      const idx = selectedTags.value.indexOf(tag)
+      if (idx !== -1) selectedTags.value.splice(idx, 1)
+    }
+
     const addWordToList = async () => {
       // Use the last edited item instead of just finding the first valid one
       const lastIndex = lastEditedField.value.index
@@ -202,11 +267,15 @@ export default {
           word_language_1: validItem.sourceText,
           word_language_2: validItem.translatedText,
           language_1: validItem.srcLanguage,
-          language_2: validItem.destLanguage
+          language_2: validItem.destLanguage,
+          tags: selectedTags.value.join(';')
         }})
         
         // Show detailed success message
-        successMessage.value = `Added "${validItem.sourceText}" → "${validItem.translatedText}" to ${lang1}/${lang2} word list`
+        const tagStr = selectedTags.value.length ? ` [${selectedTags.value.join(', ')}]` : ''
+        successMessage.value = `Added "${validItem.sourceText}" → "${validItem.translatedText}" to ${lang1}/${lang2} word list${tagStr}`
+        selectedTags.value = []
+        await fetchTags()
         
         // Auto-hide message after 2 seconds
         setTimeout(() => {
@@ -222,6 +291,9 @@ export default {
       translationItems, 
       lastEditedField, 
       successMessage,
+      availableTags,
+      selectedTags,
+      newTagInput,
       translateItem, 
       swapLanguages, 
       addWordToList,
@@ -229,7 +301,10 @@ export default {
       selectAlternative,
       selectText,
       setLastEditedField,
-      handleEnterKey
+      handleEnterKey,
+      toggleTag,
+      addNewTag,
+      removeSelectedTag
     }
   }
 }
@@ -266,6 +341,21 @@ export default {
 .voice-option label { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:#667eea }
 .voice-option input[type="checkbox"] { width:16px; height:16px }
 .actions { display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding-top:1rem }
+.tag-section { background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:1.5rem }
+.tag-section-title { font-weight:700; color:#667eea; margin-bottom:0.75rem; font-size:0.95rem }
+.available-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem }
+.tag-chip { padding:0.35rem 0.85rem; border:2px solid #667eea; border-radius:20px; background:white; color:#667eea; font-size:0.88rem; cursor:pointer; transition:background 0.15s,color 0.15s }
+.tag-chip.selected { background:#667eea; color:white }
+.tag-chip:hover:not(.selected) { background:#f0f0ff }
+.new-tag-row { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem }
+.new-tag-input { flex:1; padding:0.45rem 0.75rem; border:2px solid #e0e0e0; border-radius:8px; font-size:0.9rem; font-family:inherit }
+.new-tag-input:focus { outline:none; border-color:#667eea }
+.add-tag-button { padding:0.45rem 1rem; background:#667eea; color:white; border:none; border-radius:8px; font-size:0.88rem; font-weight:600; cursor:pointer }
+.add-tag-button:disabled { opacity:0.5; cursor:not-allowed }
+.selected-tags-preview { display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.25rem }
+.selected-label { font-size:0.85rem; font-weight:600; color:#555 }
+.selected-tag-chip { display:inline-flex; align-items:center; gap:0.3rem; padding:0.3rem 0.7rem; background:#e8ecff; border-radius:20px; font-size:0.85rem; color:#4a5bbd }
+.remove-tag-btn { background:none; border:none; color:#4a5bbd; cursor:pointer; font-size:0.8rem; padding:0; line-height:1 }
 .action-button { padding:1rem 2rem; font-size:1.1rem; font-weight:600; border:none; border-radius:8px; cursor:pointer }
 .action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
 .action-button.primary:hover { transform:translateY(-2px) }

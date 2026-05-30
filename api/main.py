@@ -7,7 +7,7 @@ from datetime import datetime
 from llm_utils.ollama_utils import llama_params_from_dict
 from translator_utils import translate_text, show_multiple_translations
 from word_test_runner import sample_word, filter_word_list_by_description
-from file_utils import add_word_pair_to_word_list, get_word_list
+from file_utils import add_word_pair_to_word_list, add_tag_list_to_word_pair, get_word_list
 from word_comparisons import check_equality
 
 # Pydantic models for request bodies
@@ -26,6 +26,7 @@ class WordPair(BaseModel):
     word_language_1: str
     word_language_2: str
     date_added: str | None = None
+    tags: str | None = None
 
 class SaveWordListRequest(BaseModel):
     language_1: str
@@ -132,15 +133,53 @@ def create_word(request: CreateWordRequest):
     }
 
 
+@app.get("/tags")
+def get_all_tags(language_1: str = None, language_2: str = None):
+    """Return all unique tags. If language_1 and language_2 are given, only from that word list."""
+    import os
+    word_lists_dir = "word_lists"
+    all_tags = set()
+
+    def _extract_tags_from_file(filepath):
+        try:
+            df = pd.read_csv(filepath)
+            if "tags" in df.columns:
+                for cell in df["tags"].dropna():
+                    for tag in str(cell).split(";"):
+                        tag = tag.strip()
+                        if tag:
+                            all_tags.add(tag)
+        except Exception:
+            pass
+
+    if language_1 and language_2:
+        try:
+            filepath = get_word_list(language_1, language_2)
+            _extract_tags_from_file(filepath)
+        except Exception:
+            pass
+    else:
+        for filename in sorted(os.listdir(word_lists_dir)):
+            if filename.endswith(".csv"):
+                _extract_tags_from_file(os.path.join(word_lists_dir, filename))
+
+    return {"tags": sorted(all_tags)}
+
+
 @app.post("/add_word_pair")
 def add_word_pair(
     word_language_1: str,
     word_language_2: str,
     language_1: str,
-    language_2: str
+    language_2: str,
+    tags: str = ""
 ):
-    """Add a word pair to the word list."""
+    """Add a word pair to the word list, optionally with semicolon-separated tags."""
     add_word_pair_to_word_list(word_language_1, word_language_2, language_1, language_2)
+    if tags:
+        tag_list = [t.strip() for t in tags.split(";") if t.strip()]
+        if tag_list:
+            add_tag_list_to_word_pair(word_language_1, word_language_2, language_1, language_2, tag_list)
     return {"status": "success", "message": "Word pair added to list"}
 
 
@@ -178,6 +217,8 @@ def get_word_list_endpoint(language_1: str, language_2: str, start_date_added: s
             end_date_added = pd.to_datetime(end_date_added)
             words = words[pd.to_datetime(words["date_added"]) <= end_date_added]
 
+        # Replace NaN with empty string so JSON serialization produces valid output
+        words = words.fillna('')
         words = words.to_dict('records')
         return {"words": words}
     except ValueError as e:
@@ -198,7 +239,8 @@ def save_word_list_endpoint(request: SaveWordListRequest):
         df = pd.DataFrame({
             lang1_cap: [word.word_language_1 for word in request.words],
             lang2_cap: [word.word_language_2 for word in request.words],
-            'date_added': [word.date_added if word.date_added else now_str for word in request.words]
+            'date_added': [word.date_added if word.date_added else now_str for word in request.words],
+            'tags': [word.tags if word.tags is not None else '' for word in request.words]
         })
         
         # Save to CSV (overwriting the old file)

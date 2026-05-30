@@ -30,6 +30,7 @@
       <div class="word-list-header">
         <div class="column-header">{{ language1 }}</div>
         <div class="column-header">{{ language2 }}</div>
+        <div class="column-header">Tags</div>
         <div class="column-header date-header">Date Added</div>
         <div class="column-header actions-header">Actions</div>
       </div>
@@ -47,6 +48,24 @@
             class="word-input"
             :placeholder="`${language2} word`"
           />
+          <div class="tags-cell">
+            <div class="tag-chips" v-if="parseTags(word.tags).length > 0">
+              <span v-for="tag in parseTags(word.tags)" :key="tag" class="tag-chip">
+                {{ tag }}
+                <button @click="removeTag(word, tag)" class="remove-tag-btn" type="button">✕</button>
+              </span>
+            </div>
+            <div class="tag-input-row">
+              <input
+                v-model="word._newTag"
+                @keydown.enter.stop.prevent="addTagToWord(word)"
+                placeholder="Add tag..."
+                class="tag-input"
+                type="text"
+              />
+              <button @click="addTagToWord(word)" class="add-tag-btn" type="button" :disabled="!word._newTag || !word._newTag.trim()">+</button>
+            </div>
+          </div>
           <div class="date-display">
             {{ word.date_added || 'N/A' }}
           </div>
@@ -155,7 +174,9 @@ export default {
         words.value = response.data.words.map(word => ({
           word1: word[langs.lang1] || '',
           word2: word[langs.lang2] || '',
-          date_added: word.date_added || ''
+          date_added: word.date_added || '',
+          tags: word.tags || '',
+          _newTag: ''
         }))
       } catch (error) {
         console.error('Error loading word list:', error)
@@ -172,7 +193,9 @@ export default {
       words.value.push({
         word1: '',
         word2: '',
-        date_added: dateAdded
+        date_added: dateAdded,
+        tags: '',
+        _newTag: ''
       })
 
       await nextTick()
@@ -181,6 +204,28 @@ export default {
       if (el && typeof el.focus === 'function') {
         el.focus()
       }
+    }
+
+    const parseTags = (tagsStr) => {
+      if (!tagsStr || tagsStr === 'NaN') return []
+      return tagsStr.split(';').map(t => t.trim()).filter(Boolean)
+    }
+
+    const addTagToWord = (word) => {
+      const raw = (word._newTag || '').trim()
+      if (!raw) return
+      const newTags = raw.split(',').map(t => t.trim()).filter(Boolean)
+      const existing = parseTags(word.tags)
+      for (const tag of newTags) {
+        if (!existing.includes(tag)) existing.push(tag)
+      }
+      word.tags = existing.join(';')
+      word._newTag = ''
+    }
+
+    const removeTag = (word, tag) => {
+      const existing = parseTags(word.tags).filter(t => t !== tag)
+      word.tags = existing.join(';')
     }
 
     const deleteWord = (index) => {
@@ -212,7 +257,8 @@ export default {
           words: validWords.map(word => ({
             word_language_1: word.word1.trim(),
             word_language_2: word.word2.trim(),
-            date_added: word.date_added || ''
+            date_added: word.date_added || '',
+            tags: word.tags || ''
           }))
         })
 
@@ -249,7 +295,10 @@ export default {
       addNewWord,
       deleteWord,
       saveChanges,
-      setWord1Ref
+      setWord1Ref,
+      parseTags,
+      addTagToWord,
+      removeTag
     }
   }
 }
@@ -339,7 +388,7 @@ export default {
 
 .word-list-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 150px 80px;
+  grid-template-columns: 1fr 1fr 180px 130px 60px;
   gap: 1rem;
   padding: 1rem;
   background-color: #f8f9fa;
@@ -369,11 +418,11 @@ export default {
 
 .word-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 150px 80px;
+  grid-template-columns: 1fr 1fr 180px 130px 60px;
   gap: 1rem;
   padding: 0.75rem 0;
   border-bottom: 1px solid #e0e0e0;
-  align-items: center;
+  align-items: start;
 }
 
 .word-row:last-child {
@@ -411,7 +460,19 @@ export default {
   cursor: pointer;
   font-size: 1.2rem;
   transition: all 0.3s ease;
+  align-self: start;
+  margin-top: 0.25rem;
 }
+
+.tags-cell { display: flex; flex-direction: column; gap: 0.35rem; }
+.tag-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.tag-chip { display:inline-flex; align-items:center; gap:0.2rem; padding:0.2rem 0.55rem; background:#e8ecff; border-radius:20px; font-size:0.8rem; color:#4a5bbd; }
+.remove-tag-btn { background:none; border:none; color:#4a5bbd; cursor:pointer; font-size:0.75rem; padding:0; line-height:1; }
+.tag-input-row { display:flex; gap:0.3rem; align-items:center; }
+.tag-input { flex:1; padding:0.3rem 0.5rem; border:1px solid #e0e0e0; border-radius:6px; font-size:0.82rem; min-width:0; }
+.tag-input:focus { outline:none; border-color:#667eea; }
+.add-tag-btn { padding:0.3rem 0.55rem; background:#667eea; color:white; border:none; border-radius:6px; font-size:0.82rem; cursor:pointer; flex-shrink:0; }
+.add-tag-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
 .delete-button:hover {
   background: #c82333;

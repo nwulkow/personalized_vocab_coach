@@ -18,6 +18,9 @@ def run_test(
         use_voice: bool = False,
         hide_correctly_translated_words: bool = False,
         description_for_word_filtering: str | None = None,
+        tags_for_word_filtering: list[str] | None = None,
+        exclude_words_with_tag: bool = False,
+        intersection_of_tags: bool = False,
         max_num_words_in_created_sentence: int = 10,
         language_level_for_created_sentence: str = "C1",
         be_stringent: bool = False,
@@ -36,6 +39,9 @@ def run_test(
     - use_voice: Whether to use voice synthesis for the words.
     - hide_correctly_translated_words: Whether to hide words that were translated correctly.
     - description_for_word_filtering: Description to filter words from the word list.
+    - tags_for_word_filtering: List of tags to filter words from the word list.
+    - exclude_words_with_tag: If True, exclude words that have any of the specified tags. If False, include only words that have at least one of the specified tags.
+    - intersection_of_tags: If True, include only words that have all of the specified tags. If False, include words that have at least one of the specified tags.
     - max_num_words_in_created_sentence: Maximum number of words in the created sentence.
     - language_level_for_created_sentence: Language level for the created sentence (e.g., "C1").
     - be_stringent: Whether to be stringent in checking the user's translation (e.g., by using a Llama model to check for correctness).
@@ -58,6 +64,13 @@ def run_test(
         else:
             words = words_filtered
             print(f"{words.shape[0]} words found matching the description. Using the filtered word list.")
+    if tags_for_word_filtering is not None and len(tags_for_word_filtering) > 0:
+        words_filtered = filter_word_list_by_tags(words, tags_for_word_filtering, exclude_words_with_tag=exclude_words_with_tag, intersection=intersection_of_tags)
+        if words_filtered.shape[0] == 0:
+            print("No words found matching the tags. Using the full word list.")
+        else:
+            words = words_filtered
+            print(f"{words.shape[0]} words found matching the tags. Using the filtered word list.")
 
     if start_date_added is not None:
         words = words[pd.to_datetime(words["date_added"]) >= start_date_added]
@@ -216,3 +229,42 @@ def filter_word_list_by_description(
     return words_filtered
 
 
+def filter_word_list_by_tags(
+    words: pd.Series,
+    tags: list[str],
+    exclude_words_with_tag: bool = False,
+    intersection: bool = False
+) -> pd.Series:
+    """Choose a subset of words from the given word list based on tags.
+
+    Parameters:
+    - words: The word list as a pandas Series.
+    - tags: A list of tags to filter the words by.
+    - exclude_words_with_tag: If True, exclude words that have any of the specified tags. If False, include only words that have at least one of the specified tags.
+    - intersection: If True, include only words that have all of the specified tags. If False, include words that have at least one of the specified tags.
+
+    Returns:
+    - A pandas Series containing only the words with the given tags.
+    """
+    if words.shape[0] == 0:
+        return None
+    
+    if "tags" not in words.columns:
+        print("No tags column found in the word list.")
+        return words
+
+    if exclude_words_with_tag:
+        if intersection:
+            mask = words["tags"].apply(lambda x: not all(tag.strip().lower() in str(x).lower() for tag in tags))
+        else:
+            mask = words["tags"].apply(lambda x: not any(tag.strip().lower() in str(x).lower() for tag in tags))
+
+    else:
+        if intersection:
+            mask = words["tags"].apply(lambda x: all(tag.strip().lower() in str(x).lower() for tag in tags))
+        else:
+            mask = words["tags"].apply(lambda x: any(tag.strip().lower() in str(x).lower() for tag in tags))
+
+    words_filtered = words[mask]
+
+    return words_filtered
