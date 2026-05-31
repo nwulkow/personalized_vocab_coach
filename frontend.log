@@ -3,9 +3,7 @@
 > vite
 
 
-  VITE v5.4.21  ready in 183 ms
+  VITE v5.4.21  ready in 129 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-14:08:55 [vite] hmr update /src/components/VocabularyTab.vue, /src/components/VocabularyTab.vue?vue&type=style&index=0&scoped=4aaa0e08&lang.css
-14:15:46 [vite] hmr update /src/components/VocabularyTab.vue

@@ -7,3 +7,4 @@ googletrans
 pyttsx3
 fastapi
 uvicorn
+python-dotenv

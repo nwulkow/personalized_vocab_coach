@@ -27,12 +27,20 @@
       >
         Word Lists
       </button>
+      <button 
+        class="tab-button" 
+        :class="{ active: activeTab === 'writing' }"
+        @click="activeTab = 'writing'"
+      >
+        Writing Practice
+      </button>
     </div>
 
     <div class="tab-content">
       <TranslatorTab v-if="activeTab === 'translator'" />
       <VocabularyTab v-if="activeTab === 'vocabulary'" />
       <WordListsTab v-if="activeTab === 'wordlists'" />
+      <TextEvaluationTab v-if="activeTab === 'writing'" />
     </div>
   </div>
 </template>
@@ -42,13 +50,15 @@ import { ref, onMounted } from 'vue'
 import TranslatorTab from './components/TranslatorTab.vue'
 import VocabularyTab from './components/VocabularyTab.vue'
 import WordListsTab from './components/WordListsTab.vue'
+import TextEvaluationTab from './components/TextEvaluationTab.vue'
 
 export default {
   name: 'App',
   components: {
     TranslatorTab,
     VocabularyTab,
-    WordListsTab
+    WordListsTab,
+    TextEvaluationTab
   },
   setup() {
     const activeTab = ref('translator')

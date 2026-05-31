@@ -1,74 +1,74 @@
-German,French,date_added
-weit,loin,2026-02-21 12:00
-mal,fois,2026-02-21 12:00
-Feuer,Feu,2026-02-21 12:00
-Wächter,Tuteur,2026-02-21 12:00
-schlechter,pire,2026-02-21 12:00
-sitzen,asseoir,2026-02-21 12:00
-abschließen,conclure,2026-02-21 12:00
-Erwachen,reveil,2026-02-21 12:00
-Sonnenbrille,lunettes de soleil,2026-02-21 12:00
-Helm,casque,2026-02-21 12:00
-verrückt,fou,2026-02-21 12:00
-vermissen,manquer,2026-02-21 12:00
-Rückzahlung,rachat,2026-02-21 12:00
-entweder,soit,2026-02-21 12:00
-Start,lancement,2026-02-21 12:00
-Wahnsinn,folie,2026-02-21 12:00
-Sterne,etoiles,2026-02-21 12:00
-gezwungen,contraint,2026-02-21 12:00
-Vorsicht,prudence,2026-02-21 12:00
-helfen,aider,2026-02-21 12:00
-behindern,entraver,2026-02-21 12:00
-Ereignis,evenement,2026-02-21 12:00
-ohne Strom,privés d’électricité,2026-02-21 12:00
-in Richtung,vers,2026-02-21 12:00
-Ausrüstung,appareillage,2026-02-21 12:00
-während,pendant,2026-02-21 12:00
-deshalb,pour cette raison,2026-02-21 12:00
-für ihn,pour lui,2026-02-21 12:00
-Nach dem Spaziergang habe ich Kuchen gebacken,"Après la promenade, j'ai préparé un gâteau",2026-02-21 12:00
-Dach,toit,2026-02-21 12:00
-ich habe ihn aufgehalten,Je l'ai arrêté,2026-02-21 12:00
-rechts,droite,2026-02-26 20:29
-links,gauche,2026-02-26 20:29
-hinter,derrière,2026-02-26 20:30
-vor dem Haus,devant la maison,2026-02-26 20:30
-vorgestern,avant-hier,2026-02-26 20:30
-morgen,matin,2026-02-26 20:30
-übermorgen,après-demain,2026-02-26 20:30
-obwohl,bien que,2026-02-26 20:30
-trotzdem,malgré ça,2026-02-26 20:30
-offen,ouvert,2026-02-26 21:39
-er scheint nett zu sein,il a l'air sympa,2026-02-26 21:49
-genügen,suffire,2026-02-27 12:29
-Stoppen,arreter,2026-02-27 13:36
-sich beschränken,se confiner,2026-03-03 13:48
-beraten,conseiller,2026-03-03 13:48
-Staatsbürger,ressortissant,2026-03-03 13:48
-hinzufügen,ajouter,2026-03-03 13:48
-sanft,douce,2026-03-03 13:48
-müde,fatigué,2026-03-03 13:48
-erinnern,rappeller,2026-03-03 13:48
-Hand,main,2026-03-03 13:48
-Wind,vent,2026-03-03 13:48
-verlieren,perdre,2026-03-03 13:48
-höflich,gentil,2026-03-03 13:48
-Frage,Question,2026-03-03 13:48
-Antwort,Répondre,2026-03-03 13:48
-Neugier,curiosité,2026-03-06 13:4
-Herz,Cœur,2026-03-03 13:48
-erhalten,recevoir,2026-03-03 13:48
-ich brauche,J'ai besoin,2026-03-03 13:48
-Gelassenheit,sang-froid,2026-03-03 13:48
-Verlust,perte,2026-03-03 13:48
-erfordern,exiger,2026-03-03 13:48
-bringen,apporter,2026-03-06 13:48
-setzen,mettre,2026-03-06 13:48
-einige,quelques,2026-03-06 13:48
-beginnen,commencer,2026-03-06 13:48
-klar und deutlich,clair et distinct,2026-03-06 13:48
-Frieden,Paix,2026-03-06 13:48
-Würde,dignité,2026-03-06 13:48
-Leute,gens,2026-03-06 13:56
-nah,fermer,2026-03-06 13:57
+German,French,date_added,tags
+weit,loin,2026-02-21 12:00,
+mal,fois,2026-02-21 12:00,Grundbegriff
+Feuer,Feu,2026-02-21 12:00,
+Wächter,Tuteur,2026-02-21 12:00,
+schlechter,pire,2026-02-21 12:00,Grundbegriff
+sitzen,asseoir,2026-02-21 12:00,Verb
+abschließen,conclure,2026-02-21 12:00,Verb
+Erwachen,reveil,2026-02-21 12:00,
+Sonnenbrille,lunettes de soleil,2026-02-21 12:00,
+Helm,casque,2026-02-21 12:00,Kleidung
+verrückt,fou,2026-02-21 12:00,Adjektiv
+vermissen,manquer,2026-02-21 12:00,Verb
+Rückzahlung,rachat,2026-02-21 12:00,
+entweder,soit,2026-02-21 12:00,Grundbegriff
+Start,lancement,2026-02-21 12:00,
+Wahnsinn,folie,2026-02-21 12:00,
+Sterne,etoiles,2026-02-21 12:00,
+gezwungen,contraint,2026-02-21 12:00,
+Vorsicht,prudence,2026-02-21 12:00,
+helfen,aider,2026-02-21 12:00,Verb
+behindern,entraver,2026-02-21 12:00,Verb
+Ereignis,evenement,2026-02-21 12:00,
+ohne Strom,privés d’électricité,2026-02-21 12:00,
+in Richtung,vers,2026-02-21 12:00,Grundbegriff
+Ausrüstung,appareillage,2026-02-21 12:00,
+während,pendant,2026-02-21 12:00,Grundbegriff
+deshalb,pour cette raison,2026-02-21 12:00,
+für ihn,pour lui,2026-02-21 12:00,
+Nach dem Spaziergang habe ich Kuchen gebacken,"Après la promenade, j'ai préparé un gâteau",2026-02-21 12:00,
+Dach,toit,2026-02-21 12:00,
+ich habe ihn aufgehalten,Je l'ai arrêté,2026-02-21 12:00,Satz
+rechts,droite,2026-02-26 20:29,
+links,gauche,2026-02-26 20:29,
+hinter,derrière,2026-02-26 20:30,
+vor dem Haus,devant la maison,2026-02-26 20:30,
+vorgestern,avant-hier,2026-02-26 20:30,
+morgen,matin,2026-02-26 20:30,Grundbegriff
+übermorgen,après-demain,2026-02-26 20:30,
+obwohl,bien que,2026-02-26 20:30,Grundbegriff
+trotzdem,malgré ça,2026-02-26 20:30,Grundbegriff
+offen,ouvert,2026-02-26 21:39,
+er scheint nett zu sein,il a l'air sympa,2026-02-26 21:49,Satz
+genügen,suffire,2026-02-27 12:29,Verb
+Stoppen,arreter,2026-02-27 13:36,Verb
+sich beschränken,se confiner,2026-03-03 13:48,Verb
+beraten,conseiller,2026-03-03 13:48,Verb
+Staatsbürger,ressortissant,2026-03-03 13:48,
+hinzufügen,ajouter,2026-03-03 13:48,Verb
+sanft,douce,2026-03-03 13:48,Adjektiv
+müde,fatigué,2026-03-03 13:48,Adjektiv
+erinnern,rappeller,2026-03-03 13:48,Verb
+Hand,main,2026-03-03 13:48,
+Wind,vent,2026-03-03 13:48,
+verlieren,perdre,2026-03-03 13:48,Verb
+höflich,gentil,2026-03-03 13:48,Adjektiv
+Frage,Question,2026-03-03 13:48,
+Antwort,Répondre,2026-03-03 13:48,
+Neugier,curiosité,2026-03-06 13:4,
+Herz,Cœur,2026-03-03 13:48,
+erhalten,recevoir,2026-03-03 13:48,Verb
+ich brauche,J'ai besoin,2026-03-03 13:48,Ausdruck
+Gelassenheit,sang-froid,2026-03-03 13:48,
+Verlust,perte,2026-03-03 13:48,
+erfordern,exiger,2026-03-03 13:48,Verb
+bringen,apporter,2026-03-06 13:48,Verb
+setzen,mettre,2026-03-06 13:48,Verb
+einige,quelques,2026-03-06 13:48,Grundbegriff
+beginnen,commencer,2026-03-06 13:48,Verb
+klar und deutlich,clair et distinct,2026-03-06 13:48,Ausdruck
+Frieden,Paix,2026-03-06 13:48,
+Würde,dignité,2026-03-06 13:48,
+Leute,gens,2026-03-06 13:56,Grundbegriff
+nah,fermer,2026-03-06 13:57,

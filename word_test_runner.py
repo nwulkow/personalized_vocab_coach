@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from file_utils import get_word_list
+from file_utils import get_word_list_file_name
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
 import datetime
@@ -54,7 +54,7 @@ def run_test(
         # check if a server under url is running
         start_ollama(llama_params.url)
     # load correct word list from folder word_lists
-    selected_word_list = get_word_list(language_1, language_2)
+    selected_word_list = get_word_list_file_name(language_1, language_2)
     words = pd.read_csv(selected_word_list).squeeze()
 
     if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:

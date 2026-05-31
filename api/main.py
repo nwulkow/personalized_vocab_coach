@@ -4,10 +4,13 @@ from pydantic import BaseModel
 import asyncio
 import pandas as pd
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from llm_utils.ollama_utils import llama_params_from_dict
 from translator_utils import translate_text, show_multiple_translations
 from word_test_runner import sample_word, filter_word_list_by_description
-from file_utils import add_word_pair_to_word_list, add_tag_list_to_word_pair, get_word_list
+from file_utils import add_word_pair_to_word_list, add_tag_list_to_word_pair, get_word_list_file_name
 from word_comparisons import check_equality
 
 # Pydantic models for request bodies
@@ -154,7 +157,7 @@ def get_all_tags(language_1: str = None, language_2: str = None):
 
     if language_1 and language_2:
         try:
-            filepath = get_word_list(language_1, language_2)
+            filepath = get_word_list_file_name(language_1, language_2)
             _extract_tags_from_file(filepath)
         except Exception:
             pass
@@ -183,6 +186,19 @@ def add_word_pair(
     return {"status": "success", "message": "Word pair added to list"}
 
 
+@app.post("/suggest_tags")
+def suggest_tags_endpoint(word_1: str, word_2: str, language_1: str, language_2: str):
+    """Suggest tags for a word pair using the configured LLM."""
+    if llama_params is None:
+        return {"tags": [], "error": "No LLM configured"}
+    try:
+        from file_utils import suggest_tag_list_for_word_pair_with_llm
+        tags = suggest_tag_list_for_word_pair_with_llm(word_1, word_2, language_1, language_2, llama_params)
+        return {"tags": tags}
+    except Exception as e:
+        return {"tags": [], "error": str(e)}
+
+
 @app.get("/word_lists")
 def get_available_word_lists():
     """Return all available word list language pairs derived from CSV filenames."""
@@ -207,7 +223,7 @@ def get_available_word_lists():
 def get_word_list_endpoint(language_1: str, language_2: str, start_date_added: str = None, end_date_added: str = None):
     """Get the word list for a given language pair."""
     try:
-        word_list_path = get_word_list(language_1, language_2)
+        word_list_path = get_word_list_file_name(language_1, language_2)
         words = pd.read_csv(word_list_path)
 
         if start_date_added is not None:
@@ -229,7 +245,7 @@ def get_word_list_endpoint(language_1: str, language_2: str, start_date_added: s
 def save_word_list_endpoint(request: SaveWordListRequest):
     """Save/replace the entire word list for a given language pair."""
     try:
-        word_list_path = get_word_list(request.language_1, request.language_2)
+        word_list_path = get_word_list_file_name(request.language_1, request.language_2)
         
         # Create DataFrame with the new words
         lang1_cap = request.language_1.capitalize()
@@ -280,7 +296,7 @@ def filter_words(language: str, description: str, language_pair: str = None):
         if language_pair:
             parts = language_pair.split('_')
             if len(parts) == 2:
-                word_list_path = get_word_list(parts[0], parts[1])
+                word_list_path = get_word_list_file_name(parts[0], parts[1])
                 words_df = pd.read_csv(word_list_path)
             else:
                 # Fall back to finding all word lists containing the language
@@ -327,3 +343,100 @@ def filter_words(language: str, description: str, language_pair: str = None):
     except Exception as e:
         return {"filtered_words": [], "error": str(e)}
 
+
+# ── Text Evaluation ─────────────────────────────────────────────────────────
+
+class EvaluateTextRequest(BaseModel):
+    text: str
+    words: list[str]
+    language: str
+    level: str = "Intermediate"  # Basic | Intermediate | Advanced
+
+class SampleWordsRequest(BaseModel):
+    language: str
+    primary_language: str
+    no_words: int = 1
+    tags: list[str] = []
+    tag_filter_mode: str = "include"   # include | exclude
+    tag_match_mode: str = "any"        # any | all
+    description: str = ""
+    start_date: str = ""
+    end_date: str = ""
+
+
+@app.get("/primary_language")
+def get_primary_language():
+    """Return the primary language from .env."""
+    return {"primary_language": os.getenv("PRIMARY_LANGUAGE", "german")}
+
+
+@app.post("/sample_words_for_writing")
+def sample_words_for_writing(request: SampleWordsRequest):
+    """Sample N words from a word list for a writing exercise, with optional tag / date filtering."""
+    from word_test_runner import filter_word_list_by_tags
+    try:
+        word_list_path = get_word_list_file_name(request.primary_language, request.language)
+        words_df = pd.read_csv(word_list_path).fillna('')
+
+        # Date filter
+        if request.start_date:
+            words_df = words_df[pd.to_datetime(words_df["date_added"], errors='coerce') >= pd.to_datetime(request.start_date)]
+        if request.end_date:
+            words_df = words_df[pd.to_datetime(words_df["date_added"], errors='coerce') <= pd.to_datetime(request.end_date)]
+
+        # Tag filter
+        if request.tags:
+            exclude = request.tag_filter_mode == "exclude"
+            intersection = request.tag_match_mode == "all"
+            words_df = filter_word_list_by_tags(words_df, request.tags, exclude_words_with_tag=exclude, intersection=intersection)
+            if words_df is None or len(words_df) == 0:
+                return {"words": [], "error": "No words match the tag filter."}
+
+        # Description filter
+        if request.description.strip() and llama_params is not None:
+            filtered = filter_word_list_by_description(words_df, request.language, request.description, llama_params)
+            if filtered is not None and len(filtered) > 0:
+                words_df = filtered
+
+        lang_col = request.language.capitalize()
+        if lang_col not in words_df.columns:
+            return {"words": [], "error": f"Column '{lang_col}' not found in word list."}
+
+        available = words_df[lang_col].dropna().unique().tolist()
+        available = [w for w in available if str(w).strip()]
+
+        if not available:
+            return {"words": [], "error": "No words available after filtering."}
+
+        n = min(request.no_words, len(available))
+        sampled = pd.Series(available).sample(n).tolist()
+        return {"words": sampled}
+    except Exception as e:
+        return {"words": [], "error": str(e)}
+
+
+@app.post("/evaluate_text")
+def evaluate_text(request: EvaluateTextRequest):
+    """Evaluate a user-written text using Gemini and return feedback."""
+    from llm_utils.llm_api_utils import respond_with_gemini
+    try:
+        words_str = ", ".join(f'"{w}"' for w in request.words)
+        level_hint = {
+            "Basic": "Focus only on very basic mistakes (word order, missing articles, verb conjugations). Do not point out subtle issues.",
+            "Intermediate": "Check for common mistakes that hinder clear communication, but do not be overly strict about minor stylistic issues.",
+            "Advanced": "Be very thorough — check for subtle mistakes, nuances, idiomatic expressions, and stylistic issues.",
+        }.get(request.level, "")
+        prompt = (
+            f"The user was asked to write a text in {request.language.capitalize()} "
+            f"that contains the following word(s): {words_str}.\n\n"
+            f"Their text: \"{request.text}\"\n\n"
+            f"Please:\n"
+            f"1. Check whether the required word(s) appear (or a grammatically correct form of them).\n"
+            f"2. Check the text for language mistakes and explain them briefly and concisely.\n"
+            f"If there are no mistakes, only say \"No mistakes found.\"\n"
+            f"{level_hint}"
+        )
+        feedback = respond_with_gemini(prompt)
+        return {"feedback": feedback.strip()}
+    except Exception as e:
+        return {"feedback": "", "error": str(e)}

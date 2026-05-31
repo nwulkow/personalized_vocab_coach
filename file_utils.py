@@ -1,8 +1,9 @@
 import glob
 import pandas as pd
 import datetime
+from llm_utils.ollama_utils import Llama_params, respond_to_prompt
 
-def get_word_list(language_1, language_2) -> str:
+def get_word_list_file_name(language_1, language_2) -> str:
     """
     Get the path to the word list file for the given language pair.
 
@@ -45,7 +46,7 @@ def add_word_pair_to_word_list(word_language_1: str, word_language_2: str, langu
     - language_2: The second language (e.g., "english").
     """
 
-    word_list_path = get_word_list(language_1, language_2)
+    word_list_path = get_word_list_file_name(language_1, language_2)
     new_row = pd.DataFrame({
          language_1.capitalize(): [word_language_1.strip()],
          language_2.capitalize(): [word_language_2.strip()],
@@ -82,7 +83,7 @@ def add_tag_to_word_pair(word_1: str, word_2: str, language_1: str, language_2: 
     - tag: The tag to add to the word pair.
     """
 
-    word_list_path = get_word_list(language_1, language_2)
+    word_list_path = get_word_list_file_name(language_1, language_2)
     words: pd.DataFrame = pd.read_csv(word_list_path)
     if "tags" not in words.columns:
         words["tags"] = ""
@@ -114,6 +115,39 @@ def add_tag_list_to_word_pair(word_1: str, word_2: str, language_1: str, languag
 
     for tag in tag_list:
         add_tag_to_word_pair(word_1, word_2, language_1, language_2, tag)
+
+
+def suggest_tag_list_for_word_pair_with_llm(word_1: str, word_2: str, language_1: str, language_2: str, llama_params: Llama_params) -> list[str]:
+    """
+    Suggest a list of tags for a word pair using a Llama model.
+
+    Parameters:
+    - word_1: The word in the first language.
+    - word_2: The word in the second language.
+    - language_1: The first language (e.g., "german").
+    - language_2: The second language (e.g., "english").
+    - llama_params: Parameters for the Llama model to use for generating tag suggestions.
+
+    Returns:
+    - A list of suggested tags for the given word pair.
+    """
+    word_list_path = get_word_list_file_name(language_1, language_2)
+    word_list = pd.read_csv(word_list_path)
+    unique_tags = word_list["tags"].dropna().unique()
+    unique_tags_str = ", ".join(unique_tags)
+    prompt = f"""
+        From the following list of existing tags: {unique_tags_str}, suggest a list of relevant tags for the word pair "{word_1}" in {language_1} and "{word_2}" in {language_2}.
+        The tags should be relevant to the meaning, usage, or other characteristics of the word pair. Return the tags in a semicolon-separated format without any additional text.
+    """
+
+    response = respond_to_prompt(
+        prompt,
+        llama_params,
+        temperature=0.3,
+        max_tokens=100,
+    )
+    suggested_tags = [t.strip() for t in response.split(";") if t.strip()]
+    return suggested_tags
 
 if __name__ == "__main__":
     add_date_to_word_list("word_lists/german_french.csv")

@@ -77,7 +77,21 @@
     </div>
 
     <div class="tag-section">
-      <div class="tag-section-title">Tags for next addition</div>
+      <div class="tag-section-header">
+        <div class="tag-section-title">
+          Tags for next addition
+          <span v-if="lastTranslatedLanguages" class="tag-list-label">
+            ({{ lastTranslatedLanguages.lang1 }} ↔ {{ lastTranslatedLanguages.lang2 }})
+          </span>
+        </div>
+        <button
+          @click="autoTag"
+          class="auto-tag-button"
+          type="button"
+          :disabled="autoTagLoading"
+          title="Suggest tags using AI"
+        >{{ autoTagLoading ? '⏳ Tagging…' : '✨ Auto tag' }}</button>
+      </div>
       <div class="available-tags" v-if="availableTags.length > 0">
         <button
           v-for="tag in availableTags"
@@ -132,10 +146,14 @@ export default {
     const availableTags = ref([])
     const selectedTags = ref([])
     const newTagInput = ref('')
+    const lastTranslatedLanguages = ref(null) // { lang1, lang2 } of most recently translated pair
+    const autoTagLoading = ref(false)
 
-    const fetchTags = async () => {
+    const fetchTags = async (lang1 = null, lang2 = null) => {
       try {
-        const response = await axios.get('/api/tags')
+        const params = {}
+        if (lang1 && lang2) { params.language_1 = lang1; params.language_2 = lang2 }
+        const response = await axios.get('/api/tags', { params })
         availableTags.value = response.data.tags
       } catch (err) {
         console.error('Error fetching tags:', err)
@@ -181,6 +199,8 @@ export default {
         item.alternatives = []
         // Track that this item was translated
         lastEditedField.value = { index, field: 'source' }
+        lastTranslatedLanguages.value = { lang1: item.srcLanguage, lang2: item.destLanguage }
+        await fetchTags(item.srcLanguage, item.destLanguage)
       } catch (err) {
         console.error('Translation error:', err)
         alert('Error translating text. Make sure the API server is running.')
@@ -248,6 +268,33 @@ export default {
       if (idx !== -1) selectedTags.value.splice(idx, 1)
     }
 
+    const autoTag = async () => {
+      const lastIndex = lastEditedField.value.index
+      const item = translationItems.value[lastIndex]
+      if (!item.sourceText.trim() || !item.translatedText.trim()) return
+      autoTagLoading.value = true
+      try {
+        const response = await axios.post('/api/suggest_tags', null, {
+          params: {
+            word_1: item.sourceText,
+            word_2: item.translatedText,
+            language_1: item.srcLanguage,
+            language_2: item.destLanguage
+          }
+        })
+        const suggested = response.data.tags || []
+        for (const tag of suggested) {
+          // Union: add to available if not there, select if not already selected
+          if (!availableTags.value.includes(tag)) availableTags.value.push(tag)
+          if (!selectedTags.value.includes(tag)) selectedTags.value.push(tag)
+        }
+      } catch (err) {
+        console.error('Error auto-tagging:', err)
+      } finally {
+        autoTagLoading.value = false
+      }
+    }
+
     const addWordToList = async () => {
       // Use the last edited item instead of just finding the first valid one
       const lastIndex = lastEditedField.value.index
@@ -275,7 +322,7 @@ export default {
         const tagStr = selectedTags.value.length ? ` [${selectedTags.value.join(', ')}]` : ''
         successMessage.value = `Added "${validItem.sourceText}" → "${validItem.translatedText}" to ${lang1}/${lang2} word list${tagStr}`
         selectedTags.value = []
-        await fetchTags()
+        await fetchTags(validItem.srcLanguage, validItem.destLanguage)
         
         // Auto-hide message after 2 seconds
         setTimeout(() => {
@@ -294,6 +341,8 @@ export default {
       availableTags,
       selectedTags,
       newTagInput,
+      lastTranslatedLanguages,
+      autoTagLoading,
       translateItem, 
       swapLanguages, 
       addWordToList,
@@ -304,7 +353,8 @@ export default {
       handleEnterKey,
       toggleTag,
       addNewTag,
-      removeSelectedTag
+      removeSelectedTag,
+      autoTag
     }
   }
 }
@@ -342,7 +392,11 @@ export default {
 .voice-option input[type="checkbox"] { width:16px; height:16px }
 .actions { display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding-top:1rem }
 .tag-section { background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:1.5rem }
-.tag-section-title { font-weight:700; color:#667eea; margin-bottom:0.75rem; font-size:0.95rem }
+.tag-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem }
+.tag-section-title { font-weight:700; color:#667eea; font-size:0.95rem; display:flex; align-items:center; gap:0.4rem }
+.tag-list-label { font-weight:400; font-size:0.85rem; color:#888; text-transform:capitalize }
+.auto-tag-button { padding:0.35rem 0.9rem; background:linear-gradient(135deg,#764ba2 0%,#667eea 100%); color:white; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; white-space:nowrap }
+.auto-tag-button:disabled { opacity:0.6; cursor:not-allowed }
 .available-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem }
 .tag-chip { padding:0.35rem 0.85rem; border:2px solid #667eea; border-radius:20px; background:white; color:#667eea; font-size:0.88rem; cursor:pointer; transition:background 0.15s,color 0.15s }
 .tag-chip.selected { background:#667eea; color:white }

@@ -1,7 +1,7 @@
 import asyncio
 import pandas as pd
 from llama_cpp import Llama
-from ollama_utils import Llama_params
+from llm_utils.ollama_utils import Llama_params
 from translator_utils import translate_text, show_multiple_translations
 
 

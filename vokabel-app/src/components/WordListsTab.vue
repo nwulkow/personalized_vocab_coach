@@ -2,7 +2,7 @@
   <div class="word-lists-tab">
     <h2>Vocabulary Lists</h2>
     <div class="word-count" v-if="!loading">
-      Total words: {{ words.length }}
+      Total words: {{ words.length }} | loading: {{ loading }} | list: {{ selectedList }}
     </div>
     
     <div class="language-selector">
@@ -55,15 +55,32 @@
                 <button @click="removeTag(word, tag)" class="remove-tag-btn" type="button">✕</button>
               </span>
             </div>
-            <div class="tag-input-row">
+            <div class="tag-input-row" style="position:relative">
               <input
-                v-model="word._newTag"
+                v-model="word.newTagInput"
                 @keydown.enter.stop.prevent="addTagToWord(word)"
+                @keydown.escape="word.newTagInput = ''"
+                @input="word.showSuggestions = true"
+                @blur="delayHideSuggestions(word)"
+                @focus="word.showSuggestions = true"
                 placeholder="Add tag..."
                 class="tag-input"
                 type="text"
+                autocomplete="off"
               />
-              <button @click="addTagToWord(word)" class="add-tag-btn" type="button" :disabled="!word._newTag || !word._newTag.trim()">+</button>
+              <button @click="addTagToWord(word)" class="add-tag-btn" type="button" :disabled="!word.newTagInput || !word.newTagInput.trim()">+</button>
+              <div
+                v-if="word.showSuggestions && tagSuggestions(word).length > 0"
+                class="tag-suggestions"
+              >
+                <button
+                  v-for="s in tagSuggestions(word)"
+                  :key="s"
+                  class="tag-suggestion-item"
+                  type="button"
+                  @mousedown.prevent="selectSuggestion(word, s)"
+                >{{ s }}</button>
+              </div>
             </div>
           </div>
           <div class="date-display">
@@ -115,6 +132,7 @@ export default {
     const language1 = ref('German')
     const language2 = ref('English')
     const word1Refs = ref([])
+    const allTags = ref([]) // all unique tags in the current word list
 
     const setWord1Ref = (el, index) => {
       if (!el) return
@@ -152,6 +170,11 @@ export default {
       }
     }
 
+    const parseTags = (tagsStr) => {
+      if (!tagsStr || tagsStr === 'NaN') return []
+      return tagsStr.split(';').map(t => t.trim()).filter(Boolean)
+    }
+
     const loadWordList = async () => {
       if (!selectedList.value) return
       loading.value = true
@@ -170,14 +193,17 @@ export default {
         })
 
         // Reset refs and transform the data to editable format
+        console.log('[WordListsTab] API response words count:', response.data.words?.length, 'langs:', langs)
         word1Refs.value = []
         words.value = response.data.words.map(word => ({
           word1: word[langs.lang1] || '',
           word2: word[langs.lang2] || '',
           date_added: word.date_added || '',
           tags: word.tags || '',
-          _newTag: ''
+          newTagInput: '',
+          showSuggestions: false
         }))
+        console.log('[WordListsTab] words.value set, length:', words.value.length)
       } catch (error) {
         console.error('Error loading word list:', error)
         message.value = 'Error loading word list'
@@ -185,6 +211,17 @@ export default {
         words.value = []
       } finally {
         loading.value = false
+      }
+
+      // Collect all unique tags for autocomplete — separately so it never clears words
+      try {
+        const tagSet = new Set()
+        words.value.forEach(w => {
+          parseTags(w.tags).forEach(t => tagSet.add(t))
+        })
+        allTags.value = Array.from(tagSet).sort()
+      } catch (e) {
+        console.warn('Could not collect tags for autocomplete:', e)
       }
     }
 
@@ -195,7 +232,8 @@ export default {
         word2: '',
         date_added: dateAdded,
         tags: '',
-        _newTag: ''
+        newTagInput: '',
+        showSuggestions: false
       })
 
       await nextTick()
@@ -206,21 +244,37 @@ export default {
       }
     }
 
-    const parseTags = (tagsStr) => {
-      if (!tagsStr || tagsStr === 'NaN') return []
-      return tagsStr.split(';').map(t => t.trim()).filter(Boolean)
+    const tagSuggestions = (word) => {
+      const input = (word.newTagInput || '').trim().toLowerCase()
+      if (!input) return []
+      const existing = parseTags(word.tags)
+      return allTags.value.filter(t =>
+        t.toLowerCase().startsWith(input) && !existing.includes(t)
+      )
+    }
+
+    const selectSuggestion = (word, tag) => {
+      word.newTagInput = tag
+      word.showSuggestions = false
+      addTagToWord(word)
+    }
+
+    const delayHideSuggestions = (word) => {
+      setTimeout(() => { word.showSuggestions = false }, 150)
     }
 
     const addTagToWord = (word) => {
-      const raw = (word._newTag || '').trim()
+      const raw = (word.newTagInput || '').trim()
       if (!raw) return
       const newTags = raw.split(',').map(t => t.trim()).filter(Boolean)
       const existing = parseTags(word.tags)
       for (const tag of newTags) {
         if (!existing.includes(tag)) existing.push(tag)
+        if (!allTags.value.includes(tag)) allTags.value.push(tag)
       }
       word.tags = existing.join(';')
-      word._newTag = ''
+      word.newTagInput = ''
+      word.showSuggestions = false
     }
 
     const removeTag = (word, tag) => {
@@ -298,7 +352,10 @@ export default {
       setWord1Ref,
       parseTags,
       addTagToWord,
-      removeTag
+      removeTag,
+      tagSuggestions,
+      selectSuggestion,
+      delayHideSuggestions
     }
   }
 }
@@ -473,6 +530,33 @@ export default {
 .tag-input:focus { outline:none; border-color:#667eea; }
 .add-tag-btn { padding:0.3rem 0.55rem; background:#667eea; color:white; border:none; border-radius:6px; font-size:0.82rem; cursor:pointer; flex-shrink:0; }
 .add-tag-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+.tag-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 2.4rem;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.tag-suggestion-item {
+  display: block;
+  width: 100%;
+  padding: 0.35rem 0.65rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.83rem;
+  color: #333;
+  cursor: pointer;
+}
+.tag-suggestion-item:hover { background: #f0f4ff; color: #667eea; }
 
 .delete-button:hover {
   background: #c82333;

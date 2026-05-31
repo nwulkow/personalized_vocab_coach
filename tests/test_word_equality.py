@@ -1,5 +1,5 @@
-from ollama_start import start_ollama
-from ollama_utils import Llama_params
+from llm_utils.start_ollama import start_ollama
+from llm_utils.ollama_utils import Llama_params
 from llama_cpp import Llama
 
 from word_comparisons import check_equality
