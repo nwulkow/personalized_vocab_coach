@@ -57,13 +57,14 @@ def run_test(
     selected_word_list = get_word_list_file_name(language_1, language_2)
     words = pd.read_csv(selected_word_list).squeeze()
 
-    if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:
-        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params, word_batch_size=word_batch_size)
-        if words_filtered.shape[0] == 0:
-            print("No words found matching the description. Using the full word list.")
-        else:
-            words = words_filtered
-            print(f"{words.shape[0]} words found matching the description. Using the filtered word list.")
+    if start_date_added is not None:
+        words = words[pd.to_datetime(words["date_added"]) >= start_date_added]
+    if end_date_added is not None:
+        words = words[pd.to_datetime(words["date_added"]) <= end_date_added]
+    if words.shape[0] == 0:
+        print("No words found matching the date criteria. Exiting the test.")
+        return
+
     if tags_for_word_filtering is not None and len(tags_for_word_filtering) > 0:
         words_filtered = filter_word_list_by_tags(words, tags_for_word_filtering, exclude_words_with_tag=exclude_words_with_tag, intersection=intersection_of_tags)
         if words_filtered.shape[0] == 0:
@@ -72,13 +73,15 @@ def run_test(
             words = words_filtered
             print(f"{words.shape[0]} words found matching the tags. Using the filtered word list.")
 
-    if start_date_added is not None:
-        words = words[pd.to_datetime(words["date_added"]) >= start_date_added]
-    if end_date_added is not None:
-        words = words[pd.to_datetime(words["date_added"]) <= end_date_added]
-    if words.shape[0] == 0:
-        print("No words found matching the date criteria. Exiting the test.")
-        return
+    if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:
+        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params, word_batch_size=word_batch_size)
+        if words_filtered.shape[0] == 0:
+            print("No words found matching the description. Using the full word list.")
+        else:
+            words = words_filtered
+            print(f"{words.shape[0]} words found matching the description. Using the filtered word list.")
+    
+    
     # shuffle words randomly
     words = words.sample(frac=1).reset_index(drop=True)
     if no_words is not None:
