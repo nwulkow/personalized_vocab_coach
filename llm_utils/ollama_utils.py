@@ -13,12 +13,14 @@ class Llama_params:
         cpu_only: bool = False,
         use_cpp: bool = False,
         llama_llm: Llama | None = None,
+        gemini_or_local: str = "local"
 ):
         self.url = url
         self.model_id = model_id
         self.cpu_only = cpu_only
         self.use_cpp = use_cpp
         self.llama_llm = llama_llm
+        self.gemini_or_local = gemini_or_local
 
 
 def llama_params_from_dict(llama_params_dict: dict) -> Llama_params:

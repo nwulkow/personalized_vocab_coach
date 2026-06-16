@@ -127,7 +127,10 @@
       <div class="prompt-card">
         <div class="prompt-label">Write a text in <strong>{{ practiceLanguage }}</strong> that uses:</div>
         <div class="word-chips">
-          <span v-for="w in currentWords" :key="w" class="word-chip">{{ w }}</span>
+          <span v-for="(w, i) in currentWords" :key="w" class="word-chip">
+            {{ w }}
+            <span v-if="currentTranslations[i]" class="word-chip-translation">{{ currentTranslations[i] }}</span>
+          </span>
         </div>
         <div class="round-badge">Round {{ round }}</div>
       </div>
@@ -151,10 +154,21 @@
         <button @click="nextRound" class="next-btn" type="button" :disabled="loadingNextWords">
           {{ loadingNextWords ? '⏳' : '⏭ Next words' }}
         </button>
-        <button @click="submitText" class="submit-btn" type="button" :disabled="!userText.trim() || submitting">
-          <span v-if="submitting">⏳ Evaluating…</span>
-          <span v-else>✔ Submit</span>
+        <select v-model="evaluationBackend" class="eval-backend-select" title="Feedback model" :disabled="submitting">
+          <option value="gemini">✨ Gemini</option>
+          <option value="local">🖥️ Local LLM</option>
+        </select>
+        <span v-if="submitting" class="evaluating-indicator">⏳ Evaluating…</span>
+        <button @click="submitText" class="submit-btn" type="button" :disabled="!userText.trim() || submitting" v-if="!submitting">
+          ✔ Submit
         </button>
+        <button @click="cancelEvaluation" class="cancel-btn" type="button" v-else>
+          ✕ Cancel
+        </button>
+      </div>
+
+      <div v-if="localWarning" class="local-warning-banner">
+        ⚠️ {{ localWarning }}
       </div>
 
       <!-- Feedback card -->
@@ -202,12 +216,15 @@ export default {
     const sessionStarted = ref(false)
     const round = ref(1)
     const currentWords = ref([])
+    const currentTranslations = ref([])
     const userText = ref('')
     const feedback = ref('')
     const submitting = ref(false)
     const loadingNextWords = ref(false)
     const sessionError = ref('')
     const textareaRef = ref(null)
+    const evaluationBackend = ref('gemini')  // 'gemini' | 'local'
+    const localWarning = ref('')
 
     // ── Init ──────────────────────────────────────────────────────────
     const fetchPrimaryLanguage = async () => {
@@ -271,7 +288,7 @@ export default {
       })
       if (res.data.error) throw new Error(res.data.error)
       if (!res.data.words || res.data.words.length === 0) throw new Error('No words returned.')
-      return res.data.words
+      return { words: res.data.words, translations: res.data.translations || [] }
     }
 
     // ── Session control ───────────────────────────────────────────────
@@ -279,8 +296,9 @@ export default {
       setupError.value = ''
       setupLoading.value = true
       try {
-        const words = await sampleWords()
+        const { words, translations } = await sampleWords()
         currentWords.value = words
+        currentTranslations.value = translations
         round.value = 1
         userText.value = ''
         feedback.value = ''
@@ -298,8 +316,9 @@ export default {
       loadingNextWords.value = true
       sessionError.value = ''
       try {
-        const words = await sampleWords()
+        const { words, translations } = await sampleWords()
         currentWords.value = words
+        currentTranslations.value = translations
         round.value++
         userText.value = ''
         feedback.value = ''
@@ -319,25 +338,44 @@ export default {
       round.value = 1
     }
 
-    // ── Submit ────────────────────────────────────────────────────────
+    // ── Submit / Cancel ───────────────────────────────────────────────
+    const currentAbortController = ref(null)
+
+    const cancelEvaluation = () => {
+      if (currentAbortController.value) {
+        currentAbortController.value.abort()
+        currentAbortController.value = null
+      }
+    }
+
     const submitText = async () => {
       if (!userText.value.trim() || submitting.value) return
       submitting.value = true
       sessionError.value = ''
       feedback.value = ''
+      localWarning.value = ''
+      const controller = new AbortController()
+      currentAbortController.value = controller
       try {
         const res = await axios.post('/api/evaluate_text', {
           text: userText.value,
           words: currentWords.value,
           language: practiceLanguage.value,
           level: level.value,
-        })
+          use_local: evaluationBackend.value === 'local',
+        }, { signal: controller.signal })
         if (res.data.error) throw new Error(res.data.error)
+        if (res.data.warning) localWarning.value = res.data.warning
         feedback.value = res.data.feedback || 'No feedback returned.'
       } catch (e) {
-        sessionError.value = e.message || 'Evaluation failed. Is the API running?'
+        if (axios.isCancel(e) || e.name === 'CanceledError' || e.name === 'AbortError') {
+          // User cancelled — silently reset, keep the text in the textarea
+        } else {
+          sessionError.value = e.message || 'Evaluation failed. Is the API running?'
+        }
       } finally {
         submitting.value = false
+        currentAbortController.value = null
       }
     }
 
@@ -346,12 +384,13 @@ export default {
       startDate, endDate,
       tagFilterMode, tagMatchMode, selectedTags, availableTags,
       setupError, setupLoading,
-      sessionStarted, round, currentWords,
+      sessionStarted, round, currentWords, currentTranslations,
       userText, textareaRef,
       feedback, feedbackIsClean, formattedFeedback,
       submitting, loadingNextWords, sessionError,
+      evaluationBackend, localWarning,
       onLanguageChange, toggleTag,
-      startSession, endSession, nextRound, submitText,
+      startSession, endSession, nextRound, submitText, cancelEvaluation,
     }
   }
 }
@@ -486,6 +525,11 @@ h2 { margin: 0 0 0.4rem; color: #667eea; font-size: 1.9rem; }
   border: 2px solid #667eea; border-radius: 24px;
   font-size: 1.05rem; font-weight: 700;
   box-shadow: 0 2px 6px rgba(102,126,234,0.15);
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+}
+.word-chip-translation {
+  font-size: 0.72rem; font-weight: 400; color: #8898d8;
+  letter-spacing: 0.01em;
 }
 .round-badge {
   position: absolute; top: 1rem; right: 1.25rem;
@@ -516,6 +560,20 @@ h2 { margin: 0 0 0.4rem; color: #667eea; font-size: 1.9rem; }
 .next-btn:hover:not(:disabled) { background: #667eea; color: white; }
 .next-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.eval-backend-select {
+  padding: 0.72rem 0.85rem; font-size: 0.9rem; font-weight: 600;
+  border: 2px solid #aaa; background: white; color: #555;
+  border-radius: 8px; cursor: pointer; transition: border-color 0.15s;
+}
+.eval-backend-select:focus { outline: none; border-color: #667eea; }
+
+.local-warning-banner {
+  margin-top: 0.6rem; padding: 0.6rem 1rem;
+  background: #fff3cd; color: #856404;
+  border: 1px solid #ffc107; border-radius: 8px;
+  font-size: 0.88rem; font-weight: 500;
+}
+
 .submit-btn {
   padding: 0.75rem 2rem; font-size: 0.95rem; font-weight: 700;
   border: none; border-radius: 8px; cursor: pointer;
@@ -525,6 +583,19 @@ h2 { margin: 0 0 0.4rem; color: #667eea; font-size: 1.9rem; }
 }
 .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(40,167,69,0.4); }
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cancel-btn {
+  padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 700;
+  border: none; border-radius: 8px; cursor: pointer;
+  background: #dc3545; color: white;
+  box-shadow: 0 3px 10px rgba(220,53,69,0.3);
+  transition: background 0.12s, transform 0.12s;
+}
+.cancel-btn:hover { background: #b02a37; transform: translateY(-1px); }
+
+.evaluating-indicator {
+  font-size: 0.88rem; color: #888; align-self: center;
+}
 
 /* ── Feedback card ───────────────────────────────────────────────────── */
 .feedback-card {

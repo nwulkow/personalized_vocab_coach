@@ -1,23 +1,27 @@
 from llm_utils.llm_api_utils import respond_with_gemini
+from llm_utils.ollama_utils import Llama_params, respond_to_prompt
 from file_utils import get_word_list_file_name
 import pandas as pd
 from typing import Literal
 import os
 
 
-def find_mistakes(text_from_user: str, level: Literal["Basic", "Intermediate", "Advanced"] = "Intermediate") -> str:
+def find_mistakes(text_from_user: str, level: Literal["Basic", "Intermediate", "Advanced"] = "Intermediate", llm_params: Llama_params = Llama_params()) -> str:
     prompt = f"""
         The user provided the following translation: "{text_from_user}".
         Please check if there are any mistakes and explain them briefly, but consicse.
         If there are no mistakes, only say "No mistakes found."
     """
     if level == "Basic":
-        prompt += " Focus only on very basic mistakes that a beginner learner of the language would make, such as incorrect word order, missing articles, or incorrect verb conjugations. Do not point out more subtle mistakes that are not crucial for basic communication."
+        prompt += " Focus only on very basic mistakes that a beginner learner of the language would make, such as incorrect word order, missing articles, or incorrect verb conjugations. Do not point out more subtle mistakes that are not crucial for basic communication. Ignore points and accents above letters."
     elif level == "Advanced":
         prompt += " Be very thorough in checking for mistakes, including subtle ones that may not be crucial for basic communication but are important for advanced proficiency. Pay attention to nuances, idiomatic expressions, and stylistic issues."
     else:
-        prompt += " Check for common mistakes that learners of the language make, but do not be overly strict. Focus on mistakes that would hinder clear communication, but do not point out very minor issues that do not affect the overall meaning."
-    response = respond_with_gemini(prompt)
+        prompt += " Check for common mistakes that learners of the language make, but do not be overly strict. Focus on mistakes that would hinder clear communication, but do not point out very minor issues that do not affect the overall meaning. Ignore points and accents above letters."
+    if llm_params.gemini_or_local == "local":
+        response = respond_to_prompt(prompt, llm_params)
+    else:
+        response = respond_with_gemini(prompt)
     return response.strip()
 
 

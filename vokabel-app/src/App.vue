@@ -2,7 +2,20 @@
   <div class="app">
     <header>
       <h1>🎓 Vokabeltrainer</h1>
-      <div class="llm-badge">🤖 {{ llmDisplay }}</div>
+      <div class="llm-selector">
+        <span class="llm-icon">🤖</span>
+        <select
+          v-model="selectedModel"
+          @change="switchModel"
+          class="model-select"
+          :disabled="modelSwitching || availableModels.length === 0"
+          :title="modelSwitching ? 'Switching model…' : 'Select LLM model'"
+        >
+          <option v-if="availableModels.length === 0" value="">No models found</option>
+          <option v-for="m in availableModels" :key="m" :value="m">{{ m }}</option>
+        </select>
+        <span v-if="modelSwitching" class="switching-indicator">⏳</span>
+      </div>
     </header>
     
     <div class="tabs">
@@ -62,21 +75,50 @@ export default {
   },
   setup() {
     const activeTab = ref('translator')
-    const llmDisplay = ref('No LLM active')
+    const availableModels = ref([])
+    const selectedModel = ref('')
+    const modelSwitching = ref(false)
 
-    onMounted(async () => {
+    const PREFERRED_DEFAULT = 'gemma4:e2b'
+
+    onMounted(async () => {  
       try {
-        const res = await fetch('http://localhost:8000/llm_info')
+        const res = await fetch('/api/ollama_models')
         const data = await res.json()
-        llmDisplay.value = data.display || 'No LLM active'
+        availableModels.value = data.models || []
+
+        // Pick default: preferred > server-reported current > first in list
+        const current = data.current
+        if (availableModels.value.includes(PREFERRED_DEFAULT)) {
+          selectedModel.value = PREFERRED_DEFAULT
+        } else if (current && availableModels.value.includes(current)) {
+          selectedModel.value = current
+        } else if (availableModels.value.length > 0) {
+          selectedModel.value = availableModels.value[0]
+        }
       } catch {
-        llmDisplay.value = 'No LLM active'
+        availableModels.value = []
       }
     })
 
+    const switchModel = async () => {
+      if (!selectedModel.value || modelSwitching.value) return
+      modelSwitching.value = true
+      try {
+        await fetch(`/api/switch_model?model_id=${encodeURIComponent(selectedModel.value)}`, {
+          method: 'POST'
+        })
+      } catch { /* ignore */ } finally {
+        modelSwitching.value = false
+      }
+    }
+
     return {
       activeTab,
-      llmDisplay
+      availableModels,
+      selectedModel,
+      modelSwitching,
+      switchModel,
     }
   }
 }
@@ -101,16 +143,46 @@ header h1 {
   font-weight: 600;
 }
 
-.llm-badge {
+.llm-selector {
   margin-top: 0.5rem;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.llm-icon {
+  font-size: 0.95rem;
+}
+
+.model-select {
   background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 20px;
-  padding: 0.25rem 0.85rem;
-  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.83rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  color: white;
+  cursor: pointer;
+  max-width: 220px;
+  transition: background 0.15s;
+}
+
+.model-select:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.model-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.model-select option {
+  background: #3a3a5c;
+  color: white;
+}
+
+.switching-indicator {
+  font-size: 0.85rem;
 }
 
 .tabs {

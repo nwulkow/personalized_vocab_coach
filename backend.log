@@ -1,47 +1,7 @@
 INFO:     Will watch for changes in these directories: ['/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [20611] using StatReload
-INFO:     Started server process [20614]
+INFO:     Started reloader process [89481] using StatReload
+INFO:     Started server process [89484]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:51031 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51042 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51043 - "GET /tags HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51042 - "GET /llm_info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51046 - "GET /tags HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51048 - "POST /translate?text=werfen&src_language=german&dest_language=spanish&speak_translated=false HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51052 - "GET /tags?language_1=german&language_2=spanish HTTP/1.1" 200 OK
-Ollama server ready!
-INFO:     127.0.0.1:51055 - "POST /suggest_tags?word_1=werfen&word_2=tirar&language_1=german&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51077 - "POST /add_word_pair?word_language_1=werfen&word_language_2=tirar&language_1=german&language_2=spanish&tags=Verb%3BSport%3BBewegung HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51079 - "GET /tags?language_1=german&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51082 - "POST /suggest_tags?word_1=werfen&word_2=tirar&language_1=german&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51088 - "GET /word_lists HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51090 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51092 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51094 - "POST /save_word_list HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51096 - "GET /word_list?language_1=german&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51099 - "GET /primary_language HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51100 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51103 - "GET /tags?language_1=german&language_2=french HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51106 - "POST /sample_words_for_writing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51110 - "POST /evaluate_text HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51113 - "POST /sample_words_for_writing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51115 - "POST /sample_words_for_writing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51118 - "POST /evaluate_text HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51121 - "POST /sample_words_for_writing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51123 - "POST /evaluate_text HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51126 - "POST /sample_words_for_writing HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51129 - "POST /evaluate_text HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51133 - "GET /tags HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51138 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51142 - "GET /word_lists HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51145 - "GET /word_list?language_1=english&language_2=spanish HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51148 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51151 - "GET /primary_language HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51152 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [20614]
-INFO:     Stopping reloader process [20611]
+INFO:     127.0.0.1:51616 - "GET /llm_info HTTP/1.1" 200 OK

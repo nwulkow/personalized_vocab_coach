@@ -52,7 +52,7 @@ app.add_middleware(
 #}
 llama_params_dict = {
     "use_cpp": False,
-    "model_id": "llama3:8b",
+    "model_id": "gemma4:e2b",
     "url": "http://127.0.0.1:11434/v1/models"
 }
 # llama_params_dict = None
@@ -77,6 +77,52 @@ def llm_info():
     if model_name:
         return {"llm_name": model_name, "display": model_name}
     return {"llm_name": None, "display": "No LLM active"}
+
+
+@app.get("/ollama_models")
+def get_ollama_models():
+    """Return list of available ollama models from `ollama list`."""
+    import subprocess
+    current_model = getattr(llama_params, 'model_id', None) if llama_params and not getattr(llama_params, 'use_cpp', False) else None
+    try:
+        result = subprocess.run(
+            ["ollama", "list"],
+            capture_output=True, text=True, timeout=10
+        )
+        lines = result.stdout.strip().split('\n')
+        models = []
+        for line in lines[1:]:  # skip header
+            parts = line.split()
+            if parts:
+                models.append(parts[0])
+        return {"models": models, "current": current_model}
+    except Exception as e:
+        return {"models": [], "current": current_model, "error": str(e)}
+
+
+@app.post("/switch_model")
+def switch_model(model_id: str):
+    """Unload the current ollama model and switch to a new one."""
+    global llama_params
+    import requests as _req
+    # Unload current model from GPU memory
+    old_model_id = getattr(llama_params, 'model_id', None) if llama_params and not getattr(llama_params, 'use_cpp', False) else None
+    if old_model_id:
+        try:
+            _req.post(
+                'http://127.0.0.1:11434/api/generate',
+                json={'model': old_model_id, 'keep_alive': 0},
+                timeout=5
+            )
+        except Exception:
+            pass
+    # Switch to new model
+    llama_params = llama_params_from_dict({
+        "use_cpp": False,
+        "model_id": model_id,
+        "url": "http://127.0.0.1:11434/v1/models"
+    })
+    return {"status": "success", "model_id": model_id, "display": model_id}
 
 @app.post("/translate")
 def translate(text: str, src_language: str, dest_language: str, speak_translated: bool):
@@ -268,12 +314,23 @@ def save_word_list_endpoint(request: SaveWordListRequest):
 
 
 @app.post("/check_translation")
-def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False, word_to_pay_attention_to: str | None = None):
-    """Check if a user's translation is correct."""
+def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False, word_to_pay_attention_to: str | None = None, check_model: str | None = None):
+    """Check if a user's translation is correct.
+    
+    If check_model is provided, a temporary Llama_params is built for that
+    specific ollama model instead of using the global llama_params.
+    """
+    params_to_use = llama_params
+    if check_model:
+        params_to_use = llama_params_from_dict({
+            "use_cpp": False,
+            "model_id": check_model,
+            "url": "http://127.0.0.1:11434/v1/models"
+        })
     is_correct = check_equality(
         user_translation,
         correct_translation,
-        llama_params=llama_params,
+        llama_params=params_to_use,
         be_stringent=be_stringent,
         word_to_pay_attention_to=word_to_pay_attention_to
     )
@@ -351,6 +408,7 @@ class EvaluateTextRequest(BaseModel):
     words: list[str]
     language: str
     level: str = "Intermediate"  # Basic | Intermediate | Advanced
+    use_local: bool = False
 
 class SampleWordsRequest(BaseModel):
     language: str
@@ -399,26 +457,35 @@ def sample_words_for_writing(request: SampleWordsRequest):
                 words_df = filtered
 
         lang_col = request.language.capitalize()
+        primary_col = request.primary_language.capitalize()
+
         if lang_col not in words_df.columns:
-            return {"words": [], "error": f"Column '{lang_col}' not found in word list."}
+            return {"words": [], "translations": [], "error": f"Column '{lang_col}' not found in word list."}
 
-        available = words_df[lang_col].dropna().unique().tolist()
-        available = [w for w in available if str(w).strip()]
+        # Keep rows where the practice-language word is non-empty, deduplicate
+        valid_mask = words_df[lang_col].notna() & (words_df[lang_col].astype(str).str.strip() != '')
+        words_df = words_df[valid_mask].drop_duplicates(subset=[lang_col])
 
-        if not available:
-            return {"words": [], "error": "No words available after filtering."}
+        if words_df.empty:
+            return {"words": [], "translations": [], "error": "No words available after filtering."}
 
-        n = min(request.no_words, len(available))
-        sampled = pd.Series(available).sample(n).tolist()
-        return {"words": sampled}
+        n = min(request.no_words, len(words_df))
+        sampled_df = words_df.sample(n)
+
+        translations = []
+        if primary_col in sampled_df.columns:
+            translations = sampled_df[primary_col].fillna('').astype(str).tolist()
+
+        return {"words": sampled_df[lang_col].tolist(), "translations": translations}
     except Exception as e:
         return {"words": [], "error": str(e)}
 
 
 @app.post("/evaluate_text")
 def evaluate_text(request: EvaluateTextRequest):
-    """Evaluate a user-written text using Gemini and return feedback."""
+    """Evaluate a user-written text using Gemini or the local LLM and return feedback."""
     from llm_utils.llm_api_utils import respond_with_gemini
+    from llm_utils.ollama_utils import respond_to_prompt
     try:
         words_str = ", ".join(f'"{w}"' for w in request.words)
         level_hint = {
@@ -436,7 +503,18 @@ def evaluate_text(request: EvaluateTextRequest):
             f"If there are no mistakes, only say \"No mistakes found.\"\n"
             f"{level_hint}"
         )
-        feedback = respond_with_gemini(prompt)
-        return {"feedback": feedback.strip()}
+        if request.use_local:
+            if llama_params is None:
+                # Fall back to Gemini and inform the client
+                feedback = respond_with_gemini(prompt)
+                return {
+                    "feedback": feedback.strip(),
+                    "warning": "No local LLM initialized — used Gemini instead."
+                }
+            feedback = respond_to_prompt(prompt, llama_params)
+            return {"feedback": feedback.strip()}
+        else:
+            feedback = respond_with_gemini(prompt)
+            return {"feedback": feedback.strip()}
     except Exception as e:
         return {"feedback": "", "error": str(e)}

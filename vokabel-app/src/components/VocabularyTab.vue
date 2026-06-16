@@ -166,6 +166,14 @@
             Be stringent with answers
           </label>
         </div>
+
+        <div class="form-group">
+          <label>Translation check model:</label>
+          <select v-model="checkTranslationModel" class="language-select">
+            <option value="">Default (global model)</option>
+            <option v-for="m in availableOllamaModels" :key="m" :value="m">{{ m }}</option>
+          </select>
+        </div>
       </div>
 
       <button @click="startTest" class="action-button primary" :disabled="startLanguage === targetLanguage">
@@ -275,6 +283,17 @@ export default {
     const selectedTestTags = ref([])
     const tagFilterMode = ref('include') // 'include' | 'exclude'
     const tagMatchMode = ref('any')       // 'any' | 'all'
+
+    const availableOllamaModels = ref([])
+    const checkTranslationModel = ref('')
+
+    const fetchOllamaModels = async () => {
+      try {
+        const res = await axios.get('/api/ollama_models')
+        availableOllamaModels.value = res.data.models || []
+      } catch { availableOllamaModels.value = [] }
+    }
+    fetchOllamaModels()
 
     const fetchTagsForTest = async () => {
       try {
@@ -591,7 +610,8 @@ export default {
             user_translation: userAnswer.value,
             correct_translation: currentWord.value.word_language_2,
             be_stringent: beStringent.value,
-            word_to_pay_attention_to: currentWord.value.original_word_language_1 || null
+            word_to_pay_attention_to: currentWord.value.original_word_language_1 || null,
+            check_model: checkTranslationModel.value || null
           }
         })
         
@@ -702,6 +722,8 @@ export default {
       tagMatchMode,
       toggleTestTag,
       ignoreAllTags,
+      availableOllamaModels,
+      checkTranslationModel,
       loading,
       loadingMessage,
       currentWord,
