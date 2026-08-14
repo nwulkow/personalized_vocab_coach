@@ -148,3 +148,8 @@ INFO:     Finished server process [46113]
 INFO:     Started server process [46288]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [46288]
+INFO:     Stopping reloader process [42961]
