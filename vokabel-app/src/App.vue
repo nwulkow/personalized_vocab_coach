@@ -2,13 +2,19 @@
   <div class="app">
     <header>
       <h1>🎓 Vokabeltrainer</h1>
+      <div class="cloud-toggle-row">
+        <label class="cloud-toggle-label" title="Use Gemini only for AI features">
+          <input type="checkbox" v-model="cloudModelsOnly" />
+          Cloud models only (Gemini)
+        </label>
+      </div>
       <div class="llm-selector">
         <span class="llm-icon">🤖</span>
         <select
           v-model="selectedModel"
           @change="switchModel"
           class="model-select"
-          :disabled="modelSwitching || availableModels.length === 0"
+          :disabled="cloudModelsOnly || modelSwitching || availableModels.length === 0"
           :title="modelSwitching ? 'Switching model…' : 'Select LLM model'"
         >
           <option v-if="availableModels.length === 0" value="">No models found</option>
@@ -50,16 +56,16 @@
     </div>
 
     <div class="tab-content">
-      <TranslatorTab v-if="activeTab === 'translator'" />
-      <VocabularyTab v-if="activeTab === 'vocabulary'" />
+      <TranslatorTab v-if="activeTab === 'translator'" :cloud-models-only="cloudModelsOnly" />
+      <VocabularyTab v-if="activeTab === 'vocabulary'" :cloud-models-only="cloudModelsOnly" />
       <WordListsTab v-if="activeTab === 'wordlists'" />
-      <TextEvaluationTab v-if="activeTab === 'writing'" />
+      <TextEvaluationTab v-if="activeTab === 'writing'" :cloud-models-only="cloudModelsOnly" />
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import TranslatorTab from './components/TranslatorTab.vue'
 import VocabularyTab from './components/VocabularyTab.vue'
 import WordListsTab from './components/WordListsTab.vue'
@@ -78,6 +84,7 @@ export default {
     const availableModels = ref([])
     const selectedModel = ref('')
     const modelSwitching = ref(false)
+    const cloudModelsOnly = ref(localStorage.getItem('cloudModelsOnly') === 'true')
 
     const PREFERRED_DEFAULT = 'gemma4:e2b'
 
@@ -113,11 +120,16 @@ export default {
       }
     }
 
+    watch(cloudModelsOnly, (value) => {
+      localStorage.setItem('cloudModelsOnly', value ? 'true' : 'false')
+    })
+
     return {
       activeTab,
       availableModels,
       selectedModel,
       modelSwitching,
+      cloudModelsOnly,
       switchModel,
     }
   }
@@ -148,6 +160,18 @@ header h1 {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+}
+
+.cloud-toggle-row {
+  margin-top: 0.85rem;
+}
+
+.cloud-toggle-label {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .llm-icon {

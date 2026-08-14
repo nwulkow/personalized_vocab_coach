@@ -1,7 +1,150 @@
 INFO:     Will watch for changes in these directories: ['/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [89481] using StatReload
-INFO:     Started server process [89484]
+INFO:     Started reloader process [42961] using StatReload
+INFO:     Started server process [42964]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:51616 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /llm_info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54339 - "GET /tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54340 - "GET /ollama_models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54343 - "GET /tags?language_1=german&language_2=english HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54342 - "GET /ollama_models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54353 - "GET /word_list?language_1=german&language_2=english HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'create_text_and_voice.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO:     127.0.0.1:54354 - "POST /create_word_batch HTTP/1.1" 200 OK
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42964]
+INFO:     Started server process [43051]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54367 - "POST /check_translation?user_translation=to+mete+out&correct_translation=to+mete+out&be_stringent=false&word_to_pay_attention_to=austeilen&cloud_models_only=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54373 - "POST /check_translation?user_translation=his+arguments+evince+a+deep+understanding+of+the+matter&correct_translation=His+arguments+evince+a+profound+understanding+of+the+subject+matter.&be_stringent=false&word_to_pay_attention_to=beweisen&cloud_models_only=true HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 95, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 153, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/routing.py", line 107, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/fastapi/routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/starlette/concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/api/main.py", line 390, in check_translation
+    is_correct = check_equality(
+                 ^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/word_comparisons.py", line 56, in check_equality
+    response = respond_with_gemini(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/llm_utils/llm_api_utils.py", line 36, in respond_with_gemini
+    response = client.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/models.py", line 6454, in generate_content
+    response = self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/models.py", line 4890, in _generate_content
+    response = self._api_client.request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/_api_client.py", line 1611, in request
+    response = self._request(http_request, http_options, stream=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/_api_client.py", line 1404, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/tenacity/__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/tenacity/__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/tenacity/__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/tenacity/__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/.local/share/uv/python/cpython-3.11.14-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/.local/share/uv/python/cpython-3.11.14-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/tenacity/__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/_api_client.py", line 1381, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/errors.py", line 155, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "/Users/niklaswulkow/ResearchEngineering/Vokabeltrainer/venv/lib/python3.11/site-packages/google/genai/errors.py", line 186, in raise_error
+    raise ServerError(status_code, response_json, response)
+google.genai.errors.ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}
+INFO:     127.0.0.1:54420 - "POST /check_translation?user_translation=a+prudent+planing+avoids+costly+delays+in+the+project+&correct_translation=Prudent+planning+prevents+costly+delays+in+the+project%27s+course.&be_stringent=false&word_to_pay_attention_to=umsichtig&cloud_models_only=true HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'word_comparisons.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [43051]
+INFO:     Started server process [46113]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'word_comparisons.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [46113]
+INFO:     Started server process [46288]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

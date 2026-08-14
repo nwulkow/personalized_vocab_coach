@@ -1,7 +1,15 @@
 from llm_utils.ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.llm_api_utils import respond_with_gemini_fast
 
 
-def check_equality(word1:str, word2:str, llama_params: Llama_params | None = None, be_stringent: bool = False, word_to_pay_attention_to: str | None = None) -> bool:
+def check_equality(
+    word1: str,
+    word2: str,
+    llama_params: Llama_params | None = None,
+    be_stringent: bool = False,
+    word_to_pay_attention_to: str | None = None,
+    cloud_models_only: bool = False,
+) -> bool:
     """Check if two words are exactly the same.
 
     Args:
@@ -20,7 +28,7 @@ def check_equality(word1:str, word2:str, llama_params: Llama_params | None = Non
         return True
     
     else:
-        if not llama_params:
+        if not llama_params and not cloud_models_only:
             return False
         
         if len(word1) < 2:
@@ -44,13 +52,16 @@ def check_equality(word1:str, word2:str, llama_params: Llama_params | None = Non
         if be_stringent:
             prompt += " Be stringent in your classification."
 
-        response = respond_to_prompt(
-            prompt,
-            llama_params,
-            temperature=0.01,
-            max_tokens=100,
-            #stop_phrases=["SAME", "DIFFERENT", "same", "different"]
-        )
+        if cloud_models_only:
+            response = respond_with_gemini_fast(prompt, temperature=0.01, max_tokens=20)
+        else:
+            response = respond_to_prompt(
+                prompt,
+                llama_params,
+                temperature=0.01,
+                max_tokens=100,
+                #stop_phrases=["SAME", "DIFFERENT", "same", "different"]
+            )
         response = response.strip().lower()
         if "different" in response:
             return False

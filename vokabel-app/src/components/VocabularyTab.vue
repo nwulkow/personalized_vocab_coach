@@ -169,7 +169,7 @@
 
         <div class="form-group">
           <label>Translation check model:</label>
-          <select v-model="checkTranslationModel" class="language-select">
+          <select v-model="checkTranslationModel" class="language-select" :disabled="cloudModelsOnly">
             <option value="">Default (global model)</option>
             <option v-for="m in availableOllamaModels" :key="m" :value="m">{{ m }}</option>
           </select>
@@ -255,7 +255,13 @@ import axios from 'axios'
 
 export default {
   name: 'VocabularyTab',
-  setup() {
+  props: {
+    cloudModelsOnly: {
+      type: Boolean,
+      default: false
+    }
+  },
+  setup(props) {
     const testStarted = ref(false)
     const startLanguage = ref('german')
     const targetLanguage = ref('english')
@@ -338,6 +344,7 @@ export default {
     const usedWordIndices = ref([])
     const correctlyAnsweredIndices = ref([])
     const availableWordsIndices = ref([]) // Maps filtered word indices to original wordsList indices
+    const cloudSentenceQueue = ref([])
 
     // Shuffle two arrays in the same random order (Fisher-Yates)
     const shufflePairedArrays = (a, b) => {
@@ -383,6 +390,7 @@ export default {
         // Reset tracking arrays
         usedWordIndices.value = []
         correctlyAnsweredIndices.value = []
+        cloudSentenceQueue.value = []
         
         // Load word list
         console.log('Loading word list...')
@@ -436,7 +444,8 @@ export default {
               params: {
                 language: startLanguage.value,
                 description: descriptionForWordFiltering.value,
-                language_pair: languagePair
+                language_pair: languagePair,
+                cloud_models_only: props.cloudModelsOnly,
               }
             })
             
@@ -538,6 +547,47 @@ export default {
         console.log('Correctly answered indices:', correctlyAnsweredIndices.value)
         console.log('hideCorrectlyTranslatedWords setting:', hideCorrectlyTranslatedWords.value)
         console.log('Available word indices (first 5):', indexMapping.slice(0, 5))
+
+        const useCloudBatching = props.cloudModelsOnly && probabilityForSentenceCreation.value > 0
+        if (useCloudBatching) {
+          if (cloudSentenceQueue.value.length === 0) {
+            loadingMessage.value = 'Loading sentences from cloud model...'
+            const batchResponse = await axios.post('/api/create_word_batch', {
+              words_language_1: availableWords.map(w => w[lang1Key]),
+              words_language_2: availableWords.map(w => w[lang2Key]),
+              language_1: startLanguage.value,
+              language_2: targetLanguage.value,
+              probability_for_sentence_creation: probabilityForSentenceCreation.value,
+              max_num_words_in_created_sentence: maxNumWordsInCreatedSentence.value,
+              language_level_for_created_sentence: languageLevelForCreatedSentence.value,
+              original_indices: indexMapping,
+              remark: remark.value.trim() !== '' ? remark.value.trim() : null,
+              cloud_models_only: true,
+              batch_size: 20,
+            })
+
+            const batchWords = batchResponse?.data?.words || []
+            cloudSentenceQueue.value = batchWords
+              .filter(w => w && w.word_language_1 && w.word_language_2)
+              .map(w => ({
+                word_language_1: w.word_language_1,
+                word_language_2: w.word_language_2,
+                word_index: w.index,
+                original_word_language_1: w.original_word_language_1
+              }))
+          }
+
+          if (cloudSentenceQueue.value.length > 0) {
+            currentWord.value = cloudSentenceQueue.value.shift()
+            const backendIndex = currentWord.value.word_index
+            if (backendIndex !== null && backendIndex !== undefined) {
+              const originalWordIndex = backendIndex
+              usedWordIndices.value.push(originalWordIndex)
+              currentWord.value.original_index = originalWordIndex
+            }
+            return
+          }
+        }
         
         console.log('Calling /api/create_word...')
         const response = await axios.post('/api/create_word', {
@@ -549,7 +599,8 @@ export default {
           max_num_words_in_created_sentence: maxNumWordsInCreatedSentence.value,
           language_level_for_created_sentence: languageLevelForCreatedSentence.value,
           original_indices: indexMapping,
-          remark: remark.value.trim() !== '' ? remark.value.trim() : null
+          remark: remark.value.trim() !== '' ? remark.value.trim() : null,
+          cloud_models_only: props.cloudModelsOnly,
         })
         
         console.log('API response received:', response.data)
@@ -611,7 +662,8 @@ export default {
             correct_translation: currentWord.value.word_language_2,
             be_stringent: beStringent.value,
             word_to_pay_attention_to: currentWord.value.original_word_language_1 || null,
-            check_model: checkTranslationModel.value || null
+            check_model: props.cloudModelsOnly ? null : (checkTranslationModel.value || null),
+            cloud_models_only: props.cloudModelsOnly,
           }
         })
         
@@ -693,6 +745,7 @@ export default {
       answerSubmitted.value = false
       usedWordIndices.value = []
       correctlyAnsweredIndices.value = []
+      cloudSentenceQueue.value = []
       stats.value = {
         correct: 0,
         incorrect: 0,

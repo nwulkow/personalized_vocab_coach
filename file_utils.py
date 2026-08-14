@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 import datetime
 from llm_utils.ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.llm_api_utils import respond_with_gemini
 
 def get_word_list_file_name(language_1, language_2) -> str:
     """
@@ -117,7 +118,14 @@ def add_tag_list_to_word_pair(word_1: str, word_2: str, language_1: str, languag
         add_tag_to_word_pair(word_1, word_2, language_1, language_2, tag)
 
 
-def suggest_tag_list_for_word_pair_with_llm(word_1: str, word_2: str, language_1: str, language_2: str, llama_params: Llama_params) -> list[str]:
+def suggest_tag_list_for_word_pair_with_llm(
+    word_1: str,
+    word_2: str,
+    language_1: str,
+    language_2: str,
+    llama_params: Llama_params | None,
+    cloud_models_only: bool = False,
+) -> list[str]:
     """
     Suggest a list of tags for a word pair using a Llama model.
 
@@ -140,12 +148,22 @@ def suggest_tag_list_for_word_pair_with_llm(word_1: str, word_2: str, language_1
         The tags should be relevant to the meaning, usage, or other characteristics of the word pair. Return the tags in a semicolon-separated format without any additional text.
     """
 
-    response = respond_to_prompt(
-        prompt,
-        llama_params,
-        temperature=0.3,
-        max_tokens=100,
-    )
+    if cloud_models_only:
+        response = respond_with_gemini(
+            prompt,
+            model="gemini-flash-latest",
+            temperature=0.2,
+            max_tokens=120,
+        )
+    else:
+        if llama_params is None:
+            return []
+        response = respond_to_prompt(
+            prompt,
+            llama_params,
+            temperature=0.3,
+            max_tokens=100,
+        )
     suggested_tags = [t.strip() for t in response.split(";") if t.strip()]
     return suggested_tags
 

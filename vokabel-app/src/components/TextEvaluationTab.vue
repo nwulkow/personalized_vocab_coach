@@ -156,7 +156,7 @@
         </button>
         <select v-model="evaluationBackend" class="eval-backend-select" title="Feedback model" :disabled="submitting">
           <option value="gemini">✨ Gemini</option>
-          <option value="local">🖥️ Local LLM</option>
+          <option value="local" :disabled="cloudModelsOnly">🖥️ Local LLM</option>
         </select>
         <span v-if="submitting" class="evaluating-indicator">⏳ Evaluating…</span>
         <button @click="submitText" class="submit-btn" type="button" :disabled="!userText.trim() || submitting" v-if="!submitting">
@@ -196,7 +196,13 @@ import axios from 'axios'
 
 export default {
   name: 'TextEvaluationTab',
-  setup() {
+  props: {
+    cloudModelsOnly: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
     // Setup state
     const practiceLanguage = ref('english')
     const level = ref('Intermediate')
@@ -253,6 +259,9 @@ export default {
 
     fetchPrimaryLanguage().then(fetchTags)
     watch(practiceLanguage, fetchTags)
+    watch(() => props.cloudModelsOnly, (value) => {
+      if (value) evaluationBackend.value = 'gemini'
+    }, { immediate: true })
 
     // ── Helpers ───────────────────────────────────────────────────────
     const toggleTag = (tag) => {
@@ -285,6 +294,7 @@ export default {
         description: description.value,
         start_date: startDate.value,
         end_date: endDate.value,
+        cloud_models_only: props.cloudModelsOnly,
       })
       if (res.data.error) throw new Error(res.data.error)
       if (!res.data.words || res.data.words.length === 0) throw new Error('No words returned.')
@@ -362,7 +372,8 @@ export default {
           words: currentWords.value,
           language: practiceLanguage.value,
           level: level.value,
-          use_local: evaluationBackend.value === 'local',
+          use_local: evaluationBackend.value === 'local' && !props.cloudModelsOnly,
+          cloud_models_only: props.cloudModelsOnly,
         }, { signal: controller.signal })
         if (res.data.error) throw new Error(res.data.error)
         if (res.data.warning) localWarning.value = res.data.warning

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from llm_utils.ollama_utils import llama_params_from_dict
 from translator_utils import translate_text, show_multiple_translations
-from word_test_runner import sample_word, filter_word_list_by_description
+from word_test_runner import sample_word, filter_word_list_by_description, sample_words_with_optional_sentences_batch
 from file_utils import add_word_pair_to_word_list, add_tag_list_to_word_pair, get_word_list_file_name
 from word_comparisons import check_equality
 
@@ -24,6 +24,11 @@ class CreateWordRequest(BaseModel):
     language_level_for_created_sentence: str = "C1"
     original_indices: list[int] | None = None
     remark: str | None = None
+    cloud_models_only: bool = False
+
+
+class CreateWordBatchRequest(CreateWordRequest):
+    batch_size: int = 20
 
 class WordPair(BaseModel):
     word_language_1: str
@@ -132,13 +137,20 @@ def translate(text: str, src_language: str, dest_language: str, speak_translated
 
 
 @app.post("/show_alternatives")
-def show_alternatives(word: str, src_language: str, dest_language: str, google_translation: str = None):
+def show_alternatives(
+    word: str,
+    src_language: str,
+    dest_language: str,
+    google_translation: str = None,
+    cloud_models_only: bool = False,
+):
     """Get multiple alternative translations for a word using the LLM."""
-    if llama_params is None:
+    if llama_params is None and not cloud_models_only:
         return {"alternatives": [], "error": "No LLM configured"}
     alternatives = show_multiple_translations(
         word, src_language, dest_language, llama_params,
-        google_translation=google_translation
+        google_translation=google_translation,
+        cloud_models_only=cloud_models_only,
     )
     return {"alternatives": alternatives}
 
@@ -162,7 +174,8 @@ def create_word(request: CreateWordRequest):
         llama_params,
         request.max_num_words_in_created_sentence,
         request.language_level_for_created_sentence,
-        remark=request.remark
+        remark=request.remark,
+        cloud_models_only=request.cloud_models_only,
     )
 
     # Ensure the returned index is a plain Python int for JSON serialization
@@ -180,6 +193,33 @@ def create_word(request: CreateWordRequest):
             "original_word_language_1": original_word_language_1
         }
     }
+
+
+@app.post("/create_word_batch")
+def create_word_batch(request: CreateWordBatchRequest):
+    """Sample up to N words and optionally pre-generate sentence pairs in one cloud call."""
+    words = pd.DataFrame({
+        request.language_1.capitalize(): request.words_language_1,
+        request.language_2.capitalize(): request.words_language_2
+    })
+
+    if request.original_indices is not None and len(request.original_indices) == len(words):
+        words.index = request.original_indices
+
+    batch_words = sample_words_with_optional_sentences_batch(
+        words=words,
+        language_1=request.language_1,
+        language_2=request.language_2,
+        probability_for_sentence_creation=request.probability_for_sentence_creation,
+        llama_params=llama_params,
+        max_num_words_in_created_sentence=request.max_num_words_in_created_sentence,
+        language_level_for_created_sentence=request.language_level_for_created_sentence,
+        remark=request.remark,
+        cloud_models_only=request.cloud_models_only,
+        batch_size=request.batch_size,
+    )
+
+    return {"words": batch_words}
 
 
 @app.get("/tags")
@@ -233,13 +273,26 @@ def add_word_pair(
 
 
 @app.post("/suggest_tags")
-def suggest_tags_endpoint(word_1: str, word_2: str, language_1: str, language_2: str):
+def suggest_tags_endpoint(
+    word_1: str,
+    word_2: str,
+    language_1: str,
+    language_2: str,
+    cloud_models_only: bool = False,
+):
     """Suggest tags for a word pair using the configured LLM."""
-    if llama_params is None:
+    if llama_params is None and not cloud_models_only:
         return {"tags": [], "error": "No LLM configured"}
     try:
         from file_utils import suggest_tag_list_for_word_pair_with_llm
-        tags = suggest_tag_list_for_word_pair_with_llm(word_1, word_2, language_1, language_2, llama_params)
+        tags = suggest_tag_list_for_word_pair_with_llm(
+            word_1,
+            word_2,
+            language_1,
+            language_2,
+            llama_params,
+            cloud_models_only=cloud_models_only,
+        )
         return {"tags": tags}
     except Exception as e:
         return {"tags": [], "error": str(e)}
@@ -314,14 +367,21 @@ def save_word_list_endpoint(request: SaveWordListRequest):
 
 
 @app.post("/check_translation")
-def check_translation(user_translation: str, correct_translation: str, be_stringent: bool = False, word_to_pay_attention_to: str | None = None, check_model: str | None = None):
+def check_translation(
+    user_translation: str,
+    correct_translation: str,
+    be_stringent: bool = False,
+    word_to_pay_attention_to: str | None = None,
+    check_model: str | None = None,
+    cloud_models_only: bool = False,
+):
     """Check if a user's translation is correct.
     
     If check_model is provided, a temporary Llama_params is built for that
     specific ollama model instead of using the global llama_params.
     """
     params_to_use = llama_params
-    if check_model:
+    if check_model and not cloud_models_only:
         params_to_use = llama_params_from_dict({
             "use_cpp": False,
             "model_id": check_model,
@@ -332,13 +392,14 @@ def check_translation(user_translation: str, correct_translation: str, be_string
         correct_translation,
         llama_params=params_to_use,
         be_stringent=be_stringent,
-        word_to_pay_attention_to=word_to_pay_attention_to
+        word_to_pay_attention_to=word_to_pay_attention_to,
+        cloud_models_only=cloud_models_only,
     )
     return {"is_correct": is_correct}
 
 
 @app.post("/filter_words")
-def filter_words(language: str, description: str, language_pair: str = None):
+def filter_words(language: str, description: str, language_pair: str = None, cloud_models_only: bool = False):
     """Filter words based on a description using LLM.
     
     Args:
@@ -346,7 +407,7 @@ def filter_words(language: str, description: str, language_pair: str = None):
         description: The description to filter by (e.g., 'verbs only')
         language_pair: Optional language pair in format 'german_english' to use specific word list
     """
-    if llama_params is None:
+    if llama_params is None and not cloud_models_only:
         return {"filtered_words": [], "error": "No LLM configured"}
     try:
         # If language_pair is provided, use that specific word list
@@ -393,7 +454,8 @@ def filter_words(language: str, description: str, language_pair: str = None):
             words_df,
             language,
             description,
-            llama_params
+            llama_params,
+            cloud_models_only=cloud_models_only,
         )
         
         return {"filtered_words": filtered_df.to_dict('records')}
@@ -409,6 +471,7 @@ class EvaluateTextRequest(BaseModel):
     language: str
     level: str = "Intermediate"  # Basic | Intermediate | Advanced
     use_local: bool = False
+    cloud_models_only: bool = False
 
 class SampleWordsRequest(BaseModel):
     language: str
@@ -420,6 +483,7 @@ class SampleWordsRequest(BaseModel):
     description: str = ""
     start_date: str = ""
     end_date: str = ""
+    cloud_models_only: bool = False
 
 
 @app.get("/primary_language")
@@ -451,8 +515,14 @@ def sample_words_for_writing(request: SampleWordsRequest):
                 return {"words": [], "error": "No words match the tag filter."}
 
         # Description filter
-        if request.description.strip() and llama_params is not None:
-            filtered = filter_word_list_by_description(words_df, request.language, request.description, llama_params)
+        if request.description.strip() and (llama_params is not None or request.cloud_models_only):
+            filtered = filter_word_list_by_description(
+                words_df,
+                request.language,
+                request.description,
+                llama_params,
+                cloud_models_only=request.cloud_models_only,
+            )
             if filtered is not None and len(filtered) > 0:
                 words_df = filtered
 
@@ -503,7 +573,7 @@ def evaluate_text(request: EvaluateTextRequest):
             f"If there are no mistakes, only say \"No mistakes found.\"\n"
             f"{level_hint}"
         )
-        if request.use_local:
+        if request.use_local and not request.cloud_models_only:
             if llama_params is None:
                 # Fall back to Gemini and inform the client
                 feedback = respond_with_gemini(prompt)

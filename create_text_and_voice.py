@@ -1,6 +1,7 @@
 import asyncio
 import pyttsx3
 from llm_utils.ollama_utils import respond_to_prompt, Llama_params
+from llm_utils.llm_api_utils import respond_with_gemini_fast
 from translator_utils import translate_text
 
 def create_sentence_from_word(
@@ -11,7 +12,8 @@ def create_sentence_from_word(
     temperature: float = 0.7,
     max_num_words: int = 10,
     language_level: str = "C1",
-    remark: str | None = None
+    remark: str | None = None,
+    cloud_models_only: bool = False
 ) -> tuple[str, str]:
     
     if word.startswith("to "):
@@ -24,12 +26,19 @@ def create_sentence_from_word(
         f"Only (!) return the created sentence and nothing more!"
     )
 
-    response_in_language_1 = respond_to_prompt(
-        prompt,
-        llama_params,
-        temperature=temperature,
-        stop_phrases=["."]
-    )
+    if cloud_models_only:
+        response_in_language_1 = respond_with_gemini_fast(
+            prompt,
+            temperature=temperature,
+            max_tokens=60,
+        )
+    else:
+        response_in_language_1 = respond_to_prompt(
+            prompt,
+            llama_params,
+            temperature=temperature,
+            stop_phrases=["."]
+        )
     response_in_language_1 = response_in_language_1.strip().split("\n")[0].strip('"').strip("'")
     response_in_language_2 = asyncio.run(translate_text(response_in_language_1, language_1, language_2, add_to_word_list=False, speak_translated=False))
 

@@ -1,11 +1,13 @@
 import os
 import pandas as pd
 import numpy as np
+import json
 from file_utils import get_word_list_file_name
 from word_comparisons import check_equality
 from create_text_and_voice import create_sentence_from_word, create_voice_from_text
 import datetime
 from llm_utils.ollama_utils import Llama_params, respond_to_prompt
+from llm_utils.llm_api_utils import respond_with_gemini, respond_with_gemini_fast
 from llm_utils.start_ollama import start_ollama
 
 def run_test(
@@ -26,7 +28,8 @@ def run_test(
         be_stringent: bool = False,
         word_batch_size: int = 20,
         start_date_added: datetime.datetime | None = None,
-        end_date_added: datetime.datetime | None = None
+        end_date_added: datetime.datetime | None = None,
+        cloud_models_only: bool = False
 ):
     """Run a vocabulary test between two languages. 
     Parameters:
@@ -73,8 +76,15 @@ def run_test(
             words = words_filtered
             print(f"{words.shape[0]} words found matching the tags. Using the filtered word list.")
 
-    if description_for_word_filtering is not None and description_for_word_filtering != "" and llama_params is not None:
-        words_filtered = filter_word_list_by_description(words, language_1, description_for_word_filtering, llama_params, word_batch_size=word_batch_size)
+    if description_for_word_filtering is not None and description_for_word_filtering != "" and (llama_params is not None or cloud_models_only):
+        words_filtered = filter_word_list_by_description(
+            words,
+            language_1,
+            description_for_word_filtering,
+            llama_params,
+            word_batch_size=word_batch_size,
+            cloud_models_only=cloud_models_only,
+        )
         if words_filtered.shape[0] == 0:
             print("No words found matching the description. Using the full word list.")
         else:
@@ -99,7 +109,8 @@ def run_test(
             probability_for_sentence_creation,
             llama_params,
             max_num_words_in_created_sentence,
-            language_level_for_created_sentence
+            language_level_for_created_sentence,
+            cloud_models_only=cloud_models_only,
         )
         last_used_words_indices.append(word_index)
         last_used_words_indices = last_used_words_indices[-hide_used_word_for_n_words:]
@@ -135,7 +146,8 @@ def sample_word(
     llama_params: Llama_params | None = None,
     max_num_words_in_created_sentence: int = 10,
     language_level_for_created_sentence: str = "C1",
-    remark: str | None = None
+    remark: str | None = None,
+    cloud_models_only: bool = False,
 ) -> tuple[str, str, int]:
     """Sample a word from the given word list.
     
@@ -163,7 +175,7 @@ def sample_word(
     original_word_language_1 = word_language_1
     num_words_in_word_language_1 = len(str(word_language_1).split())
     a = np.random.rand()
-    if num_words_in_word_language_1 < 3 and a < probability_for_sentence_creation and llama_params is not None:
+    if num_words_in_word_language_1 < 3 and a < probability_for_sentence_creation and (llama_params is not None or cloud_models_only):
             word_language_1, word_language_2 = create_sentence_from_word(
                 word_language_1,
                 language_1,
@@ -171,10 +183,174 @@ def sample_word(
                 llama_params=llama_params,
                 max_num_words=max_num_words_in_created_sentence,
                 language_level=language_level_for_created_sentence,
-                remark=remark
+                remark=remark,
+                cloud_models_only=cloud_models_only,
     )
 
     return word_language_1, word_language_2, word_index, original_word_language_1
+
+
+def _extract_json_array(text: str) -> list[dict]:
+    text = (text or "").strip()
+    if not text:
+        return []
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, list):
+            return parsed
+    except Exception:
+        pass
+
+    start = text.find("[")
+    end = text.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        snippet = text[start:end + 1]
+        try:
+            parsed = json.loads(snippet)
+            if isinstance(parsed, list):
+                return parsed
+        except Exception:
+            return []
+    return []
+
+
+def _create_sentences_cloud_batch(
+    rows_for_sentence: list[dict],
+    language_1: str,
+    language_2: str,
+    max_num_words_in_created_sentence: int,
+    language_level_for_created_sentence: str,
+    remark: str | None = None,
+) -> dict[int, tuple[str, str]]:
+    """Return mapping original_index -> (sentence_lang1, sentence_lang2)."""
+    if not rows_for_sentence:
+        return {}
+
+    input_payload = [
+        {
+            "index": int(r["index"]),
+            "word": str(r["word"]),
+            "translation": str(r["translation"]),
+        }
+        for r in rows_for_sentence
+    ]
+    prompt = (
+        f"You are helping with vocabulary practice.\n"
+        f"For each input item, create exactly one short sentence in {language_1} (max {max_num_words_in_created_sentence} words) "
+        f"at approximately {language_level_for_created_sentence} level using the given word naturally.\n"
+        f"Also provide the matching sentence translation in {language_2}.\n"
+        f"{remark if remark else ''}\n"
+        f"Return ONLY valid JSON array, no markdown, no extra text.\n"
+        f"JSON schema per item: {{\"index\": int, \"sentence_language_1\": str, \"sentence_language_2\": str}}\n"
+        f"Input items JSON:\n{json.dumps(input_payload, ensure_ascii=False)}"
+    )
+
+    try:
+        response = respond_with_gemini_fast(prompt, temperature=0.2, max_tokens=1200)
+    except Exception:
+        response = respond_with_gemini(prompt, model="gemini-flash-latest", temperature=0.2, max_tokens=1200)
+
+    parsed = _extract_json_array(response)
+    result: dict[int, tuple[str, str]] = {}
+    for item in parsed:
+        try:
+            idx = int(item.get("index"))
+            s1 = str(item.get("sentence_language_1", "")).strip()
+            s2 = str(item.get("sentence_language_2", "")).strip()
+            if s1 and s2:
+                result[idx] = (s1, s2)
+        except Exception:
+            continue
+    return result
+
+
+def sample_words_with_optional_sentences_batch(
+    words: pd.DataFrame,
+    language_1: str,
+    language_2: str,
+    probability_for_sentence_creation: float,
+    llama_params: Llama_params | None = None,
+    max_num_words_in_created_sentence: int = 10,
+    language_level_for_created_sentence: str = "C1",
+    remark: str | None = None,
+    cloud_models_only: bool = False,
+    batch_size: int = 20,
+) -> list[dict]:
+    """Sample up to `batch_size` words and optionally convert them into sentence pairs."""
+    if words is None or words.shape[0] == 0:
+        return []
+
+    n = min(max(batch_size, 1), len(words))
+    sampled = words.sample(n=n)
+
+    lang1_col = language_1.capitalize()
+    lang2_col = language_2.capitalize()
+
+    entries: list[dict] = []
+    for idx, row in sampled.iterrows():
+        w1 = str(row.get(lang1_col, "")).strip()
+        w2 = str(row.get(lang2_col, "")).strip()
+        if not w1 or not w2:
+            continue
+        entries.append(
+            {
+                "index": int(idx),
+                "word_language_1": w1,
+                "word_language_2": w2,
+                "original_word_language_1": w1,
+            }
+        )
+
+    if not entries:
+        return []
+
+    rows_for_sentence: list[dict] = []
+    for e in entries:
+        if len(str(e["word_language_1"]).split()) >= 3:
+            continue
+        if np.random.rand() < probability_for_sentence_creation:
+            rows_for_sentence.append(
+                {
+                    "index": e["index"],
+                    "word": e["word_language_1"],
+                    "translation": e["word_language_2"],
+                }
+            )
+
+    if rows_for_sentence:
+        if cloud_models_only:
+            generated = _create_sentences_cloud_batch(
+                rows_for_sentence,
+                language_1,
+                language_2,
+                max_num_words_in_created_sentence,
+                language_level_for_created_sentence,
+                remark=remark,
+            )
+            for e in entries:
+                pair = generated.get(e["index"])
+                if pair is not None:
+                    e["word_language_1"], e["word_language_2"] = pair
+        else:
+            for e in entries:
+                if not any(r["index"] == e["index"] for r in rows_for_sentence):
+                    continue
+                try:
+                    s1, s2 = create_sentence_from_word(
+                        e["word_language_1"],
+                        language_1,
+                        language_2,
+                        llama_params=llama_params,
+                        max_num_words=max_num_words_in_created_sentence,
+                        language_level=language_level_for_created_sentence,
+                        remark=remark,
+                        cloud_models_only=False,
+                    )
+                    e["word_language_1"], e["word_language_2"] = s1, s2
+                except Exception:
+                    continue
+
+    return entries
 
 
 
@@ -182,8 +358,9 @@ def filter_word_list_by_description(
     words: pd.Series,
     language_1: str,
     description: str,
-    llama_params: Llama_params,
+    llama_params: Llama_params | None,
     word_batch_size: int = 20,
+    cloud_models_only: bool = False,
 ) -> pd.Series:
     """Choose a subset of words from the given word list based on a description.
 
@@ -214,11 +391,21 @@ def filter_word_list_by_description(
             {words_batch_str}
             """
 
-        response_words_batch = respond_to_prompt(
-            prompt,
-            llama_params,
-            temperature=0.1,
-        )
+        if cloud_models_only:
+            response_words_batch = respond_with_gemini(
+                prompt,
+                model="gemini-flash-latest",
+                temperature=0.1,
+                max_tokens=200,
+            )
+        else:
+            if llama_params is None:
+                continue
+            response_words_batch = respond_to_prompt(
+                prompt,
+                llama_params,
+                temperature=0.1,
+            )
 
         parsed_words = [w.strip() for w in response_words_batch.strip().split(";") if w.strip()]
         parsed_words = [w for w in parsed_words if w in words_batch]

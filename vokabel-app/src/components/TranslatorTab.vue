@@ -134,7 +134,13 @@ import axios from 'axios'
 
 export default {
   name: 'TranslatorTab',
-  setup() {
+  props: {
+    cloudModelsOnly: {
+      type: Boolean,
+      default: false
+    }
+  },
+  setup(props) {
     const translationItems = ref([
       { srcLanguage: 'german', destLanguage: 'english', sourceText: '', translatedText: '', speakTranslated: false, alternatives: [], loadingAlternatives: false },
       { srcLanguage: 'german', destLanguage: 'spanish', sourceText: '', translatedText: '', speakTranslated: false, alternatives: [], loadingAlternatives: false },
@@ -228,7 +234,8 @@ export default {
             word: item.sourceText,
             src_language: item.srcLanguage,
             dest_language: item.destLanguage,
-            google_translation: item.translatedText
+            google_translation: item.translatedText,
+            cloud_models_only: props.cloudModelsOnly
           }
         })
         item.alternatives = response.data.alternatives
@@ -279,7 +286,8 @@ export default {
             word_1: item.sourceText,
             word_2: item.translatedText,
             language_1: item.srcLanguage,
-            language_2: item.destLanguage
+            language_2: item.destLanguage,
+            cloud_models_only: props.cloudModelsOnly
           }
         })
         const suggested = response.data.tags || []
