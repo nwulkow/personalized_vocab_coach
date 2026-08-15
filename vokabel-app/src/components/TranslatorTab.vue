@@ -371,60 +371,60 @@ export default {
 <style scoped>
 .translator-tab { max-width: 1400px; margin: 0 auto; }
 .translation-list { display:flex; flex-direction:column; gap:2rem; margin-bottom:2rem }
-.translation-item { background:white; border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1) }
+.translation-item { background: var(--bg-surface); border-radius:12px; padding:1.5rem; box-shadow:0 4px 6px rgba(var(--shadow-color),0.1) }
 .translation-row { display:grid; grid-template-columns: 1fr auto 1fr; gap:1.5rem; align-items:center }
 .button-group { display:flex; flex-direction:column; gap:0.5rem; align-items:center }
 .input-group { display:flex; flex-direction:column; gap:0.5rem }
-.input-group label { font-weight:600; color:#667eea; font-size:0.9rem; text-transform:capitalize }
+.input-group label { font-weight:600; color:var(--brand-1); font-size:0.9rem; text-transform:capitalize }
 .language-selector { display:flex; align-items:center; gap:0.75rem }
-.flag-icon { width:32px; height:24px; object-fit:cover; border-radius:4px; box-shadow:0 2px 4px rgba(0,0,0,0.1) }
-.language-select { padding:0.5rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem; background:white; cursor:pointer }
-.language-select:focus { outline:none; border-color:#667eea }
-.text-input { width:100%; padding:0.75rem; border:2px solid #e0e0e0; border-radius:6px; font-size:1rem; font-family:inherit; resize:vertical }
-.text-input:focus { outline:none; border-color:#667eea }
-.text-input.readonly { background:#f8f9fa; cursor:default }
+.flag-icon { width:32px; height:24px; object-fit:cover; border-radius:4px; box-shadow:0 2px 4px rgba(var(--shadow-color),0.1) }
+.language-select { padding:0.5rem; border:2px solid var(--border); border-radius:6px; font-size:1rem; background: var(--bg-surface); color: var(--text-primary); cursor:pointer }
+.language-select:focus { outline:none; border-color:var(--brand-1) }
+.text-input { width:100%; padding:0.75rem; border:2px solid var(--border); border-radius:6px; font-size:1rem; font-family:inherit; resize:vertical; background: var(--bg-input); color: var(--text-primary); }
+.text-input:focus { outline:none; border-color:var(--brand-1) }
+.text-input.readonly { background:var(--bg-page); cursor:default }
 .translation-output-row { display:flex; gap:0.5rem; align-items:flex-start }
 .translation-output-row .text-input { flex:1 }
-.alternatives-button { padding:0.5rem 0.6rem; background:linear-gradient(135deg,#764ba2 0%,#667eea 100%); color:white; border:none; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; white-space:pre-line; line-height:1.4; flex-shrink:0; align-self:stretch }
+.alternatives-button { padding:0.5rem 0.6rem; background:linear-gradient(135deg,var(--brand-2) 0%,var(--brand-1) 100%); color:white; border:none; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; white-space:pre-line; line-height:1.4; flex-shrink:0; align-self:stretch }
 .alternatives-button:disabled { opacity:0.5; cursor:not-allowed }
 .alternatives-button:not(:disabled):hover { transform:scale(1.03) }
 .alternatives-row { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.75rem }
-.alternative-button { padding:0.4rem 0.85rem; background:white; color:#667eea; border:2px solid #667eea; border-radius:6px; font-size:0.9rem; cursor:pointer; transition:background 0.15s, color 0.15s }
-.alternative-button:hover { background:#667eea; color:white }
-.swap-button { padding:0.5rem 1rem; background:#6c757d; color:white; border:none; border-radius:6px; font-size:1.5rem; font-weight:600; cursor:pointer }
-.swap-button:hover { background:#5a6268; transform:scale(1.03) }
-.translate-button { padding:1rem 1.5rem; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; align-self:center }
+.alternative-button { padding:0.4rem 0.85rem; background: var(--bg-surface); color:var(--brand-1); border:2px solid var(--brand-1); border-radius:6px; font-size:0.9rem; cursor:pointer; transition:background 0.15s, color 0.15s }
+.alternative-button:hover { background:var(--brand-1); color:white }
+.swap-button { padding:0.5rem 1rem; background: var(--btn-secondary-bg); color:white; border:none; border-radius:6px; font-size:1.5rem; font-weight:600; cursor:pointer }
+.swap-button:hover { background:var(--btn-secondary-bg-hover); transform:scale(1.03) }
+.translate-button { padding:1rem 1.5rem; background:linear-gradient(135deg,var(--brand-1) 0%,var(--brand-2) 100%); color:white; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; align-self:center }
 .translate-button:disabled { opacity:0.5; cursor:not-allowed }
-.voice-option { margin-top:1rem; padding-top:1rem; border-top:1px solid #e0e0e0 }
-.voice-option label { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:#667eea }
+.voice-option { margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border) }
+.voice-option label { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:var(--brand-1) }
 .voice-option input[type="checkbox"] { width:16px; height:16px }
 .actions { display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding-top:1rem }
-.tag-section { background:white; border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:1.5rem }
+.tag-section { background: var(--bg-surface); border-radius:12px; padding:1.25rem 1.5rem; box-shadow:0 4px 6px rgba(var(--shadow-color),0.1); margin-bottom:1.5rem }
 .tag-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem }
-.tag-section-title { font-weight:700; color:#667eea; font-size:0.95rem; display:flex; align-items:center; gap:0.4rem }
-.tag-list-label { font-weight:400; font-size:0.85rem; color:#888; text-transform:capitalize }
-.auto-tag-button { padding:0.35rem 0.9rem; background:linear-gradient(135deg,#764ba2 0%,#667eea 100%); color:white; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; white-space:nowrap }
+.tag-section-title { font-weight:700; color:var(--brand-1); font-size:0.95rem; display:flex; align-items:center; gap:0.4rem }
+.tag-list-label { font-weight:400; font-size:0.85rem; color:var(--text-faint); text-transform:capitalize }
+.auto-tag-button { padding:0.35rem 0.9rem; background:linear-gradient(135deg,var(--brand-2) 0%,var(--brand-1) 100%); color:white; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; white-space:nowrap }
 .auto-tag-button:disabled { opacity:0.6; cursor:not-allowed }
 .available-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem }
-.tag-chip { padding:0.35rem 0.85rem; border:2px solid #667eea; border-radius:20px; background:white; color:#667eea; font-size:0.88rem; cursor:pointer; transition:background 0.15s,color 0.15s }
-.tag-chip.selected { background:#667eea; color:white }
-.tag-chip:hover:not(.selected) { background:#f0f0ff }
+.tag-chip { padding:0.35rem 0.85rem; border:2px solid var(--brand-1); border-radius:20px; background: var(--bg-surface); color:var(--brand-1); font-size:0.88rem; cursor:pointer; transition:background 0.15s,color 0.15s }
+.tag-chip.selected { background:var(--brand-1); color:white }
+.tag-chip:hover:not(.selected) { background:var(--bg-tint) }
 .new-tag-row { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem }
-.new-tag-input { flex:1; padding:0.45rem 0.75rem; border:2px solid #e0e0e0; border-radius:8px; font-size:0.9rem; font-family:inherit }
-.new-tag-input:focus { outline:none; border-color:#667eea }
-.add-tag-button { padding:0.45rem 1rem; background:#667eea; color:white; border:none; border-radius:8px; font-size:0.88rem; font-weight:600; cursor:pointer }
+.new-tag-input { flex:1; padding:0.45rem 0.75rem; border:2px solid var(--border); border-radius:8px; font-size:0.9rem; font-family:inherit; background: var(--bg-input); color: var(--text-primary); }
+.new-tag-input:focus { outline:none; border-color:var(--brand-1) }
+.add-tag-button { padding:0.45rem 1rem; background:var(--brand-1); color:white; border:none; border-radius:8px; font-size:0.88rem; font-weight:600; cursor:pointer }
 .add-tag-button:disabled { opacity:0.5; cursor:not-allowed }
 .selected-tags-preview { display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.25rem }
-.selected-label { font-size:0.85rem; font-weight:600; color:#555 }
-.selected-tag-chip { display:inline-flex; align-items:center; gap:0.3rem; padding:0.3rem 0.7rem; background:#e8ecff; border-radius:20px; font-size:0.85rem; color:#4a5bbd }
-.remove-tag-btn { background:none; border:none; color:#4a5bbd; cursor:pointer; font-size:0.8rem; padding:0; line-height:1 }
+.selected-label { font-size:0.85rem; font-weight:600; color:var(--text-secondary) }
+.selected-tag-chip { display:inline-flex; align-items:center; gap:0.3rem; padding:0.3rem 0.7rem; background:var(--bg-chip); border-radius:20px; font-size:0.85rem; color:var(--text-chip) }
+.remove-tag-btn { background:none; border:none; color:var(--text-chip); cursor:pointer; font-size:0.8rem; padding:0; line-height:1 }
 .action-button { padding:1rem 2rem; font-size:1.1rem; font-weight:600; border:none; border-radius:8px; cursor:pointer }
-.action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
+.action-button.primary { background:linear-gradient(135deg,var(--success) 0%,var(--success-2) 100%); color:white }
 .action-button.primary:hover { transform:translateY(-2px) }
 .success-message {
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-  color: #155724;
+  background: linear-gradient(135deg, var(--success-bg) 0%, var(--success-bg-2) 100%);
+  color: var(--success-text);
   border-radius: 8px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(21, 87, 36, 0.2);
@@ -449,4 +449,4 @@ export default {
   .success-message { white-space: normal; text-align: center; }
 }
 </style>
-            .action-button.primary { background:linear-gradient(135deg,#28a745 0%,#20c997 100%); color:white }
+            .action-button.primary { background:linear-gradient(135deg,var(--success) 0%,var(--success-2) 100%); color:white }

@@ -1,6 +1,12 @@
 <template>
   <div class="app">
     <header>
+      <button
+        class="theme-toggle"
+        type="button"
+        @click="cycleTheme"
+        :title="themeLabel"
+      >{{ themeIcon }} {{ themeLabel }}</button>
       <h1>🎓 Vokabeltrainer</h1>
       <div class="cloud-toggle-row">
         <label class="cloud-toggle-label" title="Use Gemini only for AI features">
@@ -65,7 +71,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import TranslatorTab from './components/TranslatorTab.vue'
 import VocabularyTab from './components/VocabularyTab.vue'
 import WordListsTab from './components/WordListsTab.vue'
@@ -85,6 +91,30 @@ export default {
     const selectedModel = ref('')
     const modelSwitching = ref(false)
     const cloudModelsOnly = ref(localStorage.getItem('cloudModelsOnly') === 'true')
+
+    // Theme: 'system' | 'light' | 'dark'. 'system' means no data-theme attribute at all,
+    // so the prefers-color-scheme media query in style.css decides.
+    const THEME_CYCLE = ['system', 'light', 'dark']
+    const theme = ref(localStorage.getItem('theme') || 'system')
+
+    const applyTheme = (value) => {
+      if (value === 'system') {
+        document.documentElement.removeAttribute('data-theme')
+      } else {
+        document.documentElement.setAttribute('data-theme', value)
+      }
+    }
+    applyTheme(theme.value)
+
+    const cycleTheme = () => {
+      const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme.value) + 1) % THEME_CYCLE.length]
+      theme.value = next
+      localStorage.setItem('theme', next)
+      applyTheme(next)
+    }
+
+    const themeIcon = computed(() => ({ system: '🖥️', light: '☀️', dark: '🌙' }[theme.value]))
+    const themeLabel = computed(() => ({ system: 'System', light: 'Light', dark: 'Dark' }[theme.value]))
 
     const PREFERRED_DEFAULT = 'gemma4:e2b'
 
@@ -131,6 +161,10 @@ export default {
       modelSwitching,
       cloudModelsOnly,
       switchModel,
+      theme,
+      cycleTheme,
+      themeIcon,
+      themeLabel,
     }
   }
 }
@@ -142,11 +176,34 @@ export default {
 }
 
 header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
   color: white;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(var(--shadow-color), 0.1);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 header h1 {
@@ -214,7 +271,7 @@ header h1 {
   justify-content: center;
   gap: 1rem;
   padding: 2rem 1rem 0;
-  background-color: #f8f9fa;
+  background-color: var(--bg-page);
 }
 
 .tab-button {
@@ -222,27 +279,27 @@ header h1 {
   font-size: 1.1rem;
   font-weight: 500;
   border: none;
-  background-color: white;
-  color: #667eea;
+  background-color: var(--bg-surface);
+  color: var(--brand-1);
   border-radius: 8px 8px 0 0;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--shadow-color), 0.1);
 }
 
 .tab-button:hover {
-  background-color: #f0f4ff;
+  background-color: var(--bg-tint);
   transform: translateY(-2px);
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
   color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 6px rgba(var(--shadow-color), 0.15);
 }
 
 .tab-content {
-  background-color: #f8f9fa;
+  background-color: var(--bg-page);
   min-height: calc(100vh - 200px);
   padding: 2rem;
 }

@@ -806,17 +806,17 @@ export default {
 
 .setup-panel,
 .test-panel {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(var(--shadow-color), 0.1);
 }
 
 .setup-panel h2,
 .test-header h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;
-  color: #667eea;
+  color: var(--brand-1);
 }
 
 .form-grid {
@@ -841,7 +841,7 @@ export default {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .form-group input[type="checkbox"] {
@@ -859,37 +859,40 @@ export default {
   height: 24px;
   object-fit: cover;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--shadow-color), 0.1);
 }
 
 .language-select {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
-  background-color: white;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
 
 .language-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--brand-1);
 }
 
 .text-input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
   transition: border-color 0.3s ease;
 }
 
 .text-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--brand-1);
 }
 
 .date-input-row {
@@ -907,7 +910,7 @@ export default {
   width: 2rem;
   height: 2rem;
   padding: 0;
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   border: none;
   border-radius: 50%;
@@ -919,7 +922,7 @@ export default {
 }
 
 .clear-date-button:hover {
-  background: #b02a37;
+  background: var(--danger-hover);
   transform: scale(1.1);
 }
 
@@ -936,7 +939,7 @@ export default {
 }
 
 .action-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
   color: white;
   box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
 }
@@ -952,16 +955,16 @@ export default {
 }
 
 .action-button.secondary {
-  background: #6c757d;
+  background: var(--btn-secondary-bg);
   color: white;
 }
 
 .action-button.secondary:hover {
-  background: #5a6268;
+  background: var(--btn-secondary-bg-hover);
 }
 
 .error-message {
-  color: #dc3545;
+  color: var(--danger);
   margin-top: 1rem;
   font-weight: 500;
 }
@@ -972,12 +975,12 @@ export default {
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--border);
 }
 
 .test-header h2 {
   margin: 0;
-  color: #667eea;
+  color: var(--brand-1);
 }
 
 .header-info {
@@ -989,8 +992,8 @@ export default {
 .words-left {
   font-size: 1rem;
   font-weight: 600;
-  color: #667eea;
-  background-color: #f0f4ff;
+  color: var(--brand-1);
+  background-color: var(--bg-tint);
   padding: 0.5rem 1rem;
   border-radius: 20px;
 }
@@ -1005,7 +1008,7 @@ export default {
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #667eea;
+  color: var(--brand-1);
   font-size: 1.2rem;
 }
 
@@ -1017,13 +1020,13 @@ export default {
   text-align: center;
   margin-bottom: 2rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, var(--bg-tint) 0%, var(--bg-tint-2) 100%);
   border-radius: 8px;
 }
 
 .word-display label {
   font-size: 0.9rem;
-  color: #667eea;
+  color: var(--brand-1);
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -1031,7 +1034,7 @@ export default {
 .word-display h3 {
   margin: 0.5rem 0 0;
   font-size: 2rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .answer-section {
@@ -1042,22 +1045,24 @@ export default {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .answer-input {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 1.2rem;
   margin-bottom: 1rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
   transition: border-color 0.3s ease;
 }
 
 .answer-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--brand-1);
 }
 
 .result-section {
@@ -1071,8 +1076,8 @@ export default {
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -1090,20 +1095,20 @@ export default {
 }
 
 .result-message.correct {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--success-bg);
+  color: var(--success-text);
 }
 
 .result-message.incorrect {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--danger-bg);
+  color: var(--danger-text);
 }
 
 .correct-answer {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-page);
   border-radius: 6px;
 }
 
@@ -1112,13 +1117,13 @@ export default {
   justify-content: space-around;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--border);
 }
 
 .stat {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #667eea;
+  color: var(--brand-1);
 }
 
 .no-words {
@@ -1128,7 +1133,7 @@ export default {
 
 .no-words p {
   font-size: 1.2rem;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
 
@@ -1169,21 +1174,21 @@ export default {
 .tag-control-label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #667eea;
+  color: var(--brand-1);
   white-space: nowrap;
 }
 
 .tag-mode-buttons {
   display: flex;
-  border: 2px solid #667eea;
+  border: 2px solid var(--brand-1);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .tag-mode-btn {
   padding: 0.3rem 0.7rem;
-  background: white;
-  color: #667eea;
+  background: var(--bg-surface);
+  color: var(--brand-1);
   border: none;
   font-size: 0.84rem;
   font-weight: 600;
@@ -1193,21 +1198,21 @@ export default {
 }
 
 .tag-mode-btn + .tag-mode-btn {
-  border-left: 2px solid #667eea;
+  border-left: 2px solid var(--brand-1);
 }
 
 .tag-mode-btn.active {
-  background: #667eea;
+  background: var(--brand-1);
   color: white;
 }
 
 .tag-mode-btn:hover:not(.active) {
-  background: #f0f4ff;
+  background: var(--bg-tint);
 }
 
 .ignore-tags-btn {
   padding: 0.35rem 0.75rem;
-  background: #6c757d;
+  background: var(--btn-secondary-bg);
   color: white;
   border: none;
   border-radius: 6px;
@@ -1217,7 +1222,7 @@ export default {
   white-space: nowrap;
 }
 
-.ignore-tags-btn:hover { background: #5a6268; }
+.ignore-tags-btn:hover { background: var(--btn-secondary-bg-hover); }
 
 .test-tag-chips {
   display: flex;
@@ -1228,24 +1233,24 @@ export default {
 
 .test-tag-chip {
   padding: 0.3rem 0.8rem;
-  border: 2px solid #667eea;
+  border: 2px solid var(--brand-1);
   border-radius: 20px;
-  background: white;
-  color: #667eea;
+  background: var(--bg-surface);
+  color: var(--brand-1);
   font-size: 0.88rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 
 .test-tag-chip.selected {
-  background: #667eea;
+  background: var(--brand-1);
   color: white;
 }
 
-.test-tag-chip:hover:not(.selected) { background: #f0f4ff; }
+.test-tag-chip:hover:not(.selected) { background: var(--bg-tint); }
 
 .no-tags-hint {
-  color: #aaa;
+  color: var(--text-faint);
   font-size: 0.88rem;
   font-style: italic;
   margin-bottom: 0.5rem;
@@ -1253,12 +1258,12 @@ export default {
 
 .tag-filter-summary {
   font-size: 0.88rem;
-  color: #555;
+  color: var(--text-secondary);
   margin-top: 0.4rem;
   padding: 0.35rem 0.75rem;
-  background: #f0f4ff;
+  background: var(--bg-tint);
   border-radius: 6px;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--brand-1);
 }
 
 @media (max-width: 768px) {

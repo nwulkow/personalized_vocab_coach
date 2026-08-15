@@ -167,6 +167,16 @@ private struct WordRowEditor: View {
     let existingTags: [String]
 
     @State private var newTag = ""
+    @FocusState private var tagFieldFocused: Bool
+
+    /// All tags not already on this word, narrowed by whatever's typed. Empty query (including
+    /// just having tapped into the field) shows every remaining tag, not only prefix matches.
+    private var suggestions: [String] {
+        let remaining = existingTags.filter { !word.tags.contains($0) }
+        let query = newTag.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !query.isEmpty else { return remaining }
+        return remaining.filter { $0.lowercased().hasPrefix(query) }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -198,8 +208,9 @@ private struct WordRowEditor: View {
                 TextField("Add tag…", text: $newTag)
                     .font(.caption)
                     .textFieldStyle(.roundedBorder)
-                    .onSubmit(addTag)
-                Button("Add", action: addTag)
+                    .focused($tagFieldFocused)
+                    .onSubmit(addTypedTag)
+                Button("Add", action: addTypedTag)
                     .font(.caption.weight(.semibold))
                     .disabled(newTag.trimmingCharacters(in: .whitespaces).isEmpty)
 
@@ -209,15 +220,15 @@ private struct WordRowEditor: View {
                     .foregroundStyle(.secondary)
             }
 
-            if newTag.count > 0 {
-                let suggestions = existingTags.filter { $0.lowercased().hasPrefix(newTag.lowercased()) && !word.tags.contains($0) }
-                if !suggestions.isEmpty {
-                    FlowLayout(spacing: 4, lineSpacing: 4) {
-                        ForEach(suggestions.prefix(5), id: \.self) { s in
-                            Button(s) { word.tags.append(s); newTag = "" }
-                                .font(.caption2)
-                                .buttonStyle(ChipToggleStyle(isSelected: false))
-                        }
+            // Shown while the field is focused (tap in to browse every remaining tag) and
+            // narrowed as you type. Tapping a chip doesn't clear focus, so you can add several
+            // tags in a row without the panel disappearing after each one.
+            if tagFieldFocused, !suggestions.isEmpty {
+                FlowLayout(spacing: 4, lineSpacing: 4) {
+                    ForEach(suggestions, id: \.self) { suggestion in
+                        Button(suggestion) { addTag(suggestion) }
+                            .font(.caption2)
+                            .buttonStyle(ChipToggleStyle(isSelected: false))
                     }
                 }
             }
@@ -225,7 +236,16 @@ private struct WordRowEditor: View {
         .padding(.vertical, 4)
     }
 
-    private func addTag() {
+    /// Adds one tag (from a suggestion tap or matched exactly) without touching `newTag`'s
+    /// focus, so the suggestion panel stays open for adding more.
+    private func addTag(_ tag: String) {
+        guard !word.tags.contains(tag) else { return }
+        word.tags.append(tag)
+        newTag = ""
+    }
+
+    /// Adds whatever's typed (supports comma-separated multiple tags) via the Add button/Return key.
+    private func addTypedTag() {
         let raw = newTag.trimmingCharacters(in: .whitespaces)
         guard !raw.isEmpty else { return }
         for t in raw.split(separator: ",").map({ $0.trimmingCharacters(in: .whitespaces) }) where !t.isEmpty && !word.tags.contains(t) {

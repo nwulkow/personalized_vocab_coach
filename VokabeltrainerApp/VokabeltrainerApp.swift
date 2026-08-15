@@ -8,6 +8,7 @@ struct VokabeltrainerApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .preferredColorScheme(appState.appearanceMode.colorScheme)
         }
     }
 }

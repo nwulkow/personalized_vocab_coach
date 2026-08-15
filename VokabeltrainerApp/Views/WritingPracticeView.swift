@@ -32,6 +32,23 @@ struct WritingPracticeView: View {
     private var currentList: WordList { appState.wordList(for: primaryLanguage, practiceLanguage) }
     private var feedbackIsClean: Bool { feedback.lowercased().hasPrefix("no mistakes") }
 
+    /// Parses `feedback` one line at a time rather than as one Markdown document. Gemini's
+    /// replies use numbered points and blank-line paragraph breaks; feeding the whole string
+    /// through `AttributedString(markdown:)` in a single `Text` collapses all of that into one
+    /// run-on line (Text has no concept of Markdown's block/paragraph structure), which read as
+    /// a jumbled wall of text. Parsing per line keeps line breaks intact while still rendering
+    /// inline emphasis like **bold**.
+    private var feedbackLines: [AttributedString] {
+        feedback
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .map { line in
+                let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+                return (try? AttributedString(markdown: line, options: options)) ?? AttributedString(line)
+            }
+    }
+
     var body: some View {
         Group {
             if sessionActive { sessionView } else { setupView }
@@ -236,8 +253,12 @@ struct WritingPracticeView: View {
                 Text(level).font(.caption2.weight(.semibold)).padding(.horizontal, 8).padding(.vertical, 3)
                     .background(Capsule().fill(Color.black.opacity(0.06)))
             }
-            Text((try? AttributedString(markdown: feedback)) ?? AttributedString(feedback))
-                .font(.subheadline)
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(feedbackLines.enumerated()), id: \.offset) { _, line in
+                    Text(line)
+                }
+            }
+            .font(.subheadline)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)

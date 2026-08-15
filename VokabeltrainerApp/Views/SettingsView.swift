@@ -104,6 +104,15 @@ struct SettingsView: View {
                 Text("Defaults: \"\(GeminiService.defaultRegularModel)\" (regular) and \"\(GeminiService.defaultFastModel)\" (fast). Tap above to load the exact models your key can call and pick specific versions. If one model fails, the other is tried as a fallback.")
             }
 
+            Section("Appearance") {
+                Picker("Appearance", selection: $appState.appearanceMode) {
+                    ForEach(AppearanceMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
             Section("Primary language") {
                 Picker("Primary language", selection: Binding(
                     get: { appState.primaryLanguage },

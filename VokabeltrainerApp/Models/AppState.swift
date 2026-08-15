@@ -11,6 +11,7 @@ final class AppState: ObservableObject {
     @AppStorage("primaryLanguage") var primaryLanguageRaw: String = Language.german.rawValue
     @AppStorage("geminiRegularModel") var geminiRegularModel: String = GeminiService.defaultRegularModel
     @AppStorage("geminiFastModel") var geminiFastModel: String = GeminiService.defaultFastModel
+    @AppStorage("appearanceMode") var appearanceMode: AppearanceMode = .system
 
     var primaryLanguage: Language {
         get { Language(rawValue: primaryLanguageRaw) ?? .german }

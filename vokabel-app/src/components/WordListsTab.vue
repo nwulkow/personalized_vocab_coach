@@ -369,16 +369,16 @@ export default {
 }
 
 .word-lists-tab h2 {
-  color: #667eea;
+  color: var(--brand-1);
   margin-bottom: 2rem;
   font-size: 2rem;
 }
 
 .language-selector {
-  background: white;
+  background: var(--bg-surface);
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.1);
   margin-bottom: 2rem;
 }
 
@@ -390,24 +390,25 @@ export default {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .language-select {
   width: 100%;
   max-width: 400px;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
-  background-color: white;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
 
 .language-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--brand-1);
 }
 
 .list-selector-with-flags {
@@ -426,21 +427,21 @@ export default {
   height: 30px;
   object-fit: cover;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--shadow-color), 0.1);
 }
 
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #667eea;
+  color: var(--brand-1);
   font-size: 1.2rem;
 }
 
 .word-list-container {
-  background: white;
+  background: var(--bg-surface);
   padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.1);
 }
 
 .word-list-header {
@@ -448,11 +449,11 @@ export default {
   grid-template-columns: 1fr 1fr 180px 130px 60px;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-page);
   border-radius: 8px;
   margin-bottom: 1rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .column-header {
@@ -478,7 +479,7 @@ export default {
   grid-template-columns: 1fr 1fr 180px 130px 60px;
   gap: 1rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border);
   align-items: start;
 }
 
@@ -488,28 +489,30 @@ export default {
 
 .word-input {
   padding: 0.5rem 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
   transition: border-color 0.3s ease;
 }
 
 .word-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--brand-1);
 }
 
 .date-display {
   padding: 0.5rem 0.75rem;
   text-align: center;
-  color: #6c757d;
+  color: var(--text-muted);
   font-size: 0.9rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-page);
   border-radius: 6px;
 }
 
 .delete-button {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   border: none;
   border-radius: 6px;
@@ -523,12 +526,12 @@ export default {
 
 .tags-cell { display: flex; flex-direction: column; gap: 0.35rem; }
 .tag-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.tag-chip { display:inline-flex; align-items:center; gap:0.2rem; padding:0.2rem 0.55rem; background:#e8ecff; border-radius:20px; font-size:0.8rem; color:#4a5bbd; }
-.remove-tag-btn { background:none; border:none; color:#4a5bbd; cursor:pointer; font-size:0.75rem; padding:0; line-height:1; }
+.tag-chip { display:inline-flex; align-items:center; gap:0.2rem; padding:0.2rem 0.55rem; background:var(--bg-chip); border-radius:20px; font-size:0.8rem; color:var(--text-chip); }
+.remove-tag-btn { background:none; border:none; color:var(--text-chip); cursor:pointer; font-size:0.75rem; padding:0; line-height:1; }
 .tag-input-row { display:flex; gap:0.3rem; align-items:center; }
-.tag-input { flex:1; padding:0.3rem 0.5rem; border:1px solid #e0e0e0; border-radius:6px; font-size:0.82rem; min-width:0; }
-.tag-input:focus { outline:none; border-color:#667eea; }
-.add-tag-btn { padding:0.3rem 0.55rem; background:#667eea; color:white; border:none; border-radius:6px; font-size:0.82rem; cursor:pointer; flex-shrink:0; }
+.tag-input { flex:1; padding:0.3rem 0.5rem; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; min-width:0; background: var(--bg-input); color: var(--text-primary); }
+.tag-input:focus { outline:none; border-color:var(--brand-1); }
+.add-tag-btn { padding:0.3rem 0.55rem; background:var(--brand-1); color:white; border:none; border-radius:6px; font-size:0.82rem; cursor:pointer; flex-shrink:0; }
 .add-tag-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
 .tag-suggestions {
@@ -536,11 +539,11 @@ export default {
   top: calc(100% + 2px);
   left: 0;
   right: 2.4rem;
-  background: white;
-  border: 2px solid #667eea;
+  background: var(--bg-surface);
+  border: 2px solid var(--brand-1);
   border-radius: 6px;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px rgba(var(--shadow-color),0.12);
   max-height: 160px;
   overflow-y: auto;
 }
@@ -553,13 +556,13 @@ export default {
   border: none;
   text-align: left;
   font-size: 0.83rem;
-  color: #333;
+  color: var(--text-primary);
   cursor: pointer;
 }
-.tag-suggestion-item:hover { background: #f0f4ff; color: #667eea; }
+.tag-suggestion-item:hover { background: var(--bg-tint); color: var(--brand-1); }
 
 .delete-button:hover {
-  background: #c82333;
+  background: var(--danger-hover);
   transform: scale(1.1);
 }
 
@@ -581,7 +584,7 @@ export default {
 }
 
 .action-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 100%);
   color: white;
   box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
 }
@@ -597,12 +600,12 @@ export default {
 }
 
 .action-button.secondary {
-  background: #6c757d;
+  background: var(--btn-secondary-bg);
   color: white;
 }
 
 .action-button.secondary:hover {
-  background: #5a6268;
+  background: var(--btn-secondary-bg-hover);
   transform: translateY(-2px);
 }
 
@@ -615,26 +618,26 @@ export default {
 }
 
 .message.success {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--success-bg);
+  color: var(--success-text);
 }
 
 .message.error {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--danger-bg);
+  color: var(--danger-text);
 }
 
 .no-words {
   text-align: center;
   padding: 3rem;
-  background: white;
+  background: var(--bg-surface);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.1);
 }
 
 .no-words p {
   font-size: 1.2rem;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
 </style>

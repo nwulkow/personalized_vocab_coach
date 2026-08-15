@@ -80,8 +80,22 @@ The application uses the following API endpoints:
 - `GET /word_list` - Get word list for a language pair
 - `POST /check_translation` - Check if a translation is correct
 
+## Dark Mode
+
+The app follows your OS appearance by default (`prefers-color-scheme`), and a toggle in the
+top-right of the header (☀️/🌙/🖥️) lets you force Light, Dark, or back to System — the choice
+is remembered in `localStorage`.
+
+All theme-able colors live as CSS custom properties in `src/style.css` (`--bg-page`,
+`--text-primary`, `--border`, etc.), redefined once under the `prefers-color-scheme: dark`
+media query and again under `[data-theme="dark"]` so the manual toggle overrides the OS
+setting in either direction. Brand colors (the indigo/purple gradient, success/danger/warning
+hues) stay the same in both themes — only backgrounds, text, and borders shift. If you add a
+new component, use the existing `var(--…)` tokens instead of hardcoded hex values so it stays
+themed automatically.
+
 ## Technology Stack
 
 - **Frontend**: Vue.js 3, Vite, Axios
 - **Backend**: FastAPI, Python
-- **Styling**: CSS3 with modern gradients and animations
+- **Styling**: CSS3 with modern gradients and animations, CSS custom properties for light/dark theming
