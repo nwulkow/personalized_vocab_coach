@@ -1,17 +1,27 @@
 import SwiftUI
 
-/// Small rounded code badge (e.g. "DE") standing in for a flag — renders consistently
-/// everywhere, unlike regional-indicator flag emoji, and doesn't imply one country per language.
+/// Flag image paired with a small rounded code badge (e.g. "DE"). The code badge is the
+/// reliable part — it renders consistently everywhere, unlike regional-indicator flag emoji,
+/// and doesn't imply one country per language — the flag next to it is just a familiar,
+/// faster-to-scan visual cue.
 struct LanguageCodeBadge: View {
     let language: Language
     var size: CGFloat = 30
 
     var body: some View {
-        Text(language.code)
-            .font(.system(size: size * 0.4, weight: .bold, design: .rounded))
-            .foregroundStyle(Color.brandIndigo)
-            .frame(width: size, height: size)
-            .background(Circle().fill(Color.brandIndigo.opacity(0.14)))
+        HStack(spacing: size * 0.12) {
+            Image(language.flagAssetName)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: size * 0.8, height: size * 0.6)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.1))
+            Text(language.code)
+                .font(.system(size: size * 0.4, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.brandIndigo)
+        }
+        .padding(.horizontal, size * 0.15)
+        .frame(height: size)
+        .background(Capsule().fill(Color.brandIndigo.opacity(0.14)))
     }
 }
 

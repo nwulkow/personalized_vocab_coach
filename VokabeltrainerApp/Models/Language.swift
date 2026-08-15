@@ -19,6 +19,9 @@ enum Language: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// Asset catalog name of the flag image shown alongside the code badge.
+    var flagAssetName: String { "flag-\(rawValue)" }
+
     /// Google-Translate language code
     var gtCode: String {
         switch self {
